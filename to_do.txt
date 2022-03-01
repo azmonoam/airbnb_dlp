@@ -1,0 +1,2 @@
+change prints (not PETA)
+put epoch out as arg
