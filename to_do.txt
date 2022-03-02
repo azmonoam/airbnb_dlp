@@ -1,2 +1,7 @@
 change prints (not PETA)
 put epoch out as arg
+test and train
+save model and weigths in processes
+attention plot
+presentation
+clean code
