@@ -35,6 +35,7 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
+parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/results')
 
 
 def get_album(args):
@@ -111,6 +112,8 @@ def main():
     print('start learning')
 
     losses = []
+    loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
+    now_ts = datetime.datetime.now().strftime('%d-%m-%y %H:%M')
     for i in range(epochs):
         #t0 = time.time()
         batch = 0
@@ -138,10 +141,11 @@ def main():
             losses.append((loss_number, i, batch))
             # visualizer.update(loss_number)
             print('epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
+            loss_data = loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
             batch += 1
         if i % 10 == 0:
-            torch.save(model.state_dict(), '/home/labs/testing/class63/model_ep_{}.pth'.format(i))
-
+            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pth'.format(args.results_path, now_ts, i))
+            loss_data.to_csv('{}/losses/looses_{}.csv'.format(args.results_path, now_ts))
     # Get album
     tensor_batch, montage = get_album(args)
 
