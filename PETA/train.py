@@ -138,8 +138,11 @@ def main():
             losses.append((loss_number, i, batch))
             # visualizer.update(loss_number)
             print('epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
-            print(losses)
             batch += 1
+        if i%10 == 0:
+            torch.save(model.state_dict(), 'model_ep_{}'.format(i))
+
+
 
     # Get album
     tensor_batch, montage = get_album(args)
