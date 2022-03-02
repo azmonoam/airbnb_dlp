@@ -1,7 +1,12 @@
 change prints (not PETA)
-put epoch out as arg
+put epoch and lr out as arg
+
 test and train
-save model and weigths in processes
+save model and weigths in processes - michal
+save loss on the go - noam
 attention plot
+baseline loss calc - tal
+
+
 presentation
 clean code
