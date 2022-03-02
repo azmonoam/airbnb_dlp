@@ -36,6 +36,9 @@ parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
 parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/results')
+parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/class63/train_ids.txt')
+parser.add_argument('--epochs', type=str, default=1000)
+parser.add_argument('--lr', type=str, default=0.001)
 
 
 def get_album(args):
@@ -104,10 +107,10 @@ def main():
     val_loader = create_dataloader(args)
     print('done\n')
 
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
     criterion = torch.nn.MSELoss(reduction='mean')
     #criterion = torch.nn.CrossEntropyLoss()
-    epochs = 1
+    epochs = args.epochs
     # visualizer = utils2.Visualizer()
     print('start learning')
 
@@ -115,37 +118,33 @@ def main():
     loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     now_ts = datetime.datetime.now().strftime('%d-%m-%y %H:%M')
     for i in range(epochs):
-        #t0 = time.time()
         batch = 0
         for album_batch, price_batch in val_loader:
             album_batch.requires_grad_()
             album_batch = album_batch.cuda()
-            t1 = time.time()
             pred = model(album_batch)
-            t2 = time.time()
-            print("model time {}".format(str(t2 - t1)))
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float).cuda()
-            # print(album, pred, price)
             loss = criterion(pred, price_batch)
             loss = loss.to(torch.float).cuda()
-            # acc = accuracy(pred, price)
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            #t3 = time.time()
-            #print("batch time {}".format(str(t3 - t0)))
 
             loss_number = loss.item()
             losses.append((loss_number, i, batch))
-            # visualizer.update(loss_number)
             print('epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
             loss_data = loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
             batch += 1
         if i % 10 == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pth'.format(args.results_path, now_ts, i))
             loss_data.to_csv('{}/losses/looses_{}.csv'.format(args.results_path, now_ts))
+            loss_grouped_data = loss_data.groupby(['epoch'], as_index=False).median()
+            plt.title('loss as funciton of epochs')
+            plt.plot(loss_grouped_data['epoch'], loss_grouped_data['loss'])
+            plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(i-1)))
+
     # Get album
     tensor_batch, montage = get_album(args)
 
