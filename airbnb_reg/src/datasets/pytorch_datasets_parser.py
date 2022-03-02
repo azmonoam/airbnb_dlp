@@ -12,9 +12,10 @@ def default_loader(path):
 def get_impaths_from_dir(dirpath, args=None):
     impaths = []
     labels = []
+    ids = []
     cls_dirs = os.listdir(dirpath)
     for cls in cls_dirs:
-        dir_cls = os.path.join(dirpath,cls)
+        dir_cls = os.path.join(dirpath, cls)
         albums = os.listdir(dir_cls)
         # albums = os.listdir(dirpath)
         for album in albums:
@@ -22,8 +23,10 @@ def get_impaths_from_dir(dirpath, args=None):
             imgs_album = os.listdir(os.path.join(dir_cls, album))
             # impaths.append([os.path.join(album, img) for img in imgs_album])
             labels_album = [cls]*len(imgs_album)
+            ids_album = [album]*len(imgs_album)
             impaths.append([os.path.join(cls, album, img) for img in imgs_album])
             labels.append(labels_album)
+            ids.append(ids_album)
 
 
     # from collections import Counter, defaultdict, OrderedDict
@@ -51,7 +54,7 @@ def get_impaths_from_dir(dirpath, args=None):
     #    lbls.append(labels_onehot)
         lbls.append([float(lbl)])
 
-    return impaths, lbls
+    return impaths, lbls, ids
 
 class DatasetFromList(data.Dataset):
     """From List dataset."""

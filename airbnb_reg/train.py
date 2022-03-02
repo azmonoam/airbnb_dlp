@@ -114,7 +114,7 @@ def main():
     for i in range(epochs):
         #t0 = time.time()
         batch = 0
-        for album_batch, price_batch in val_loader:
+        for album_batch, price_batch, ids in val_loader:
             album_batch.requires_grad_()
             album_batch = album_batch.cuda()
             t1 = time.time()
@@ -122,6 +122,11 @@ def main():
             t2 = time.time()
             print("model time {}".format(str(t2 - t1)))
             pred = pred.to(torch.float)
+            if i%10 == 0:
+                pred_table = pd.DataFrame()
+                pred_table['ids'] = ids
+                pred_table['pred'] = pred
+                pred_table.to_csv('pred_table_epoch{}.csv'.format(i), index=False)
             price_batch = price_batch.to(torch.float).cuda()
             # print(album, pred, price)
             loss = criterion(pred, price_batch)

@@ -7,10 +7,10 @@ from torchvision.transforms import transforms
 from torchvision.datasets import ImageFolder
 from PIL import Image
 import numpy as np
-from src.augmentations.generate_transforms import generate_validation_transform
-from src.datasets.pytorch_datasets_parser import DatasetFromList
-from src.samplers.samplers import ValOrderedSampler
-from src.report_manager.utils import AccumMetricG, accuracy, mAP
+from airbnb_reg.src.augmentations.generate_transforms import generate_validation_transform
+from airbnb_reg.src.datasets.pytorch_datasets_parser import DatasetFromList
+from airbnb_reg.src.samplers.samplers import ValOrderedSampler
+from airbnb_reg.src.report_manager.utils import AccumMetricG, accuracy, mAP
 
 def trunc_normal_(x, mean=0., std=1.):
   "Truncated normal initialization (approximation)"
