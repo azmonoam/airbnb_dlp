@@ -10,3 +10,4 @@ baseline loss calc - tal
 
 presentation
 clean code
+optimize imports and req file
