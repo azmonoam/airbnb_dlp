@@ -26,7 +26,7 @@ def create_val_dataset(args, transform, add_extra_data=True):
 
     source = args.val_dir
 
-    val_dl = DatasetFromList(source, transform=transform, args=args)
+    val_dl = DatasetFromList(source, transform=transform, args=args, train=True)
 
     return val_dl
 
@@ -69,7 +69,7 @@ def fast_collate(batch, clip_length=None):
 
 
 
-def create_dataloader(args):
+def create_dataloader(args, train=True):
   val_bs = args.batch_size
 
   val_transform = generate_validation_transform(args) #, do_prefetch=False)
@@ -85,7 +85,8 @@ def create_dataloader(args):
   val_tfms.transforms.append(transforms.ToTensor())
   '''
   # val_dataset1 = ImageFolder(args.val_dir, val_transform)
-  val_dataset = create_val_dataset(args, val_transform) #val_tfms)
+  val_dataset = create_val_dataset(args, val_transform, train=True) #val_tfms)
+
 
   # creating samplers
   # train_sampler, val_sampler = create_samplers(args, train_data, valid_data)

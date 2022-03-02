@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from ..tresnet import TResnetM, TResnetL, TResnetXL
-from src.models.models import MTResnetAggregate
+from airbnb_reg.src.models.models import MTResnetAggregate
 # from ..resnext.modules import GlobalAvgPool2dResNext
 from ..utils.global_avg_pooling import GlobalAvgPool2dResNext
 from torch.nn import Linear

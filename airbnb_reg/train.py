@@ -17,15 +17,15 @@ from src.loss_functions.asymmetric_loss import AsymmetricLoss
 # Parameters
 parser = argparse.ArgumentParser(description='airbnb_reg: Photo album Event recognition using Transformers Attention.')
 parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
-parser.add_argument('--album_path', type=str, default='/home/labs/testing/class63/airbnb')
-parser.add_argument('--val_dir', type=str, default='/home/labs/testing/class63/airbnb')  # /Graduation') # /0_92024390@N00')
+parser.add_argument('--album_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_exdata')
+parser.add_argument('--val_dir', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_exdata')  # /Graduation') # /0_92024390@N00')
 parser.add_argument('--num_classes', type=int, default=1)
 parser.add_argument('--model_name', type=str, default='mtresnetaggregate')
 parser.add_argument('--transformers_pos', type=int, default=1)
 parser.add_argument('--input_size', type=int, default=224)
 parser.add_argument('--transform_type', type=str, default='squish')
 parser.add_argument('--album_sample', type=str, default='rand_permute')
-parser.add_argument('--dataset_path', type=str, default='/home/labs/testing/class63/airbnb')
+parser.add_argument('--dataset_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_exdata')
 parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
 parser.add_argument('--path_output', type=str, default='./outputs')
 parser.add_argument('--use_transformer', type=int, default=1)
@@ -35,7 +35,7 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
-
+parser.add_argument('--train_ids_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_exdata/train_ids.txt')
 
 def get_album(args):
     files = os.listdir(args.album_path)
@@ -100,7 +100,7 @@ def main():
 
     # Setup data loader
     print('creating data loader...')
-    val_loader = create_dataloader(args)
+    val_loader = create_dataloader(args, train=True)
     print('done\n')
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
@@ -146,6 +146,7 @@ def main():
             batch += 1
         if i % 10 == 0:
             torch.save(model.state_dict(), '/home/labs/testing/class63/model_ep_{}.pth'.format(i))
+        ## TODO : load test data loader with val_loader = create_dataloader(args, train=False) and run test epoch
 
     # Get album
     tensor_batch, montage = get_album(args)
