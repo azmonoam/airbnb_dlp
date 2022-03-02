@@ -5,8 +5,9 @@ test and train
 save model and weigths in processes - michal
 save loss on the go - noam
 attention plot
-baseline loss calc - tal
+baseline loss calc & distribution comparison - tal
 
 
 presentation
 clean code
+optimize imports and req file

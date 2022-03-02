@@ -15,7 +15,7 @@ from src.loss_functions.asymmetric_loss import AsymmetricLoss
 
 # ----------------------------------------------------------------------
 # Parameters
-parser = argparse.ArgumentParser(description='PETA: Photo album Event recognition using Transformers Attention.')
+parser = argparse.ArgumentParser(description='airbnb_reg: Photo album Event recognition using Transformers Attention.')
 parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
 parser.add_argument('--album_path', type=str, default='/home/labs/testing/class63/airbnb')
 parser.add_argument('--val_dir', type=str, default='/home/labs/testing/class63/airbnb')  # /Graduation') # /0_92024390@N00')
@@ -80,7 +80,7 @@ def display_image(im, tags, filename, path_dest):
 
 
 def main():
-    print('PETA demo of inference code on a single album.')
+    print('airbnb_reg demo of inference code on a single album.')
 
     # ----------------------------------------------------------------------
     # Preliminaries
