@@ -60,7 +60,7 @@ def create_dataloader(args, train_mode):
 
 
   valid_dl_pytorch = torch.utils.data.DataLoader(
-    val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=False,
+    val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=True,
     num_workers=args.num_workers, drop_last=False, collate_fn=partial(fast_collate, clip_length=args.album_clip_length))
   # valid_dl_pytorch = PrefetchLoader(valid_dl_pytorch, args=args)
   #sampler=val_sampler

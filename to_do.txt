@@ -1,12 +1,13 @@
 v change prints (not PETA)
 v put epoch and lr out as arg
 
-test and train
+v test and train
 v save model and weigths in processes - michal
 v save loss on the go - noam
 attention plot
 v baseline loss calc & distribution comparison - tal
-
+V shuffle between batches
+save predictions
 
 presentation
 clean code
