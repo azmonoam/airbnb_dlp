@@ -39,6 +39,17 @@ parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
 
 
+def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, args):
+    train_loss_data.to_csv('{}/losses/train_looses_{}.csv'.format(args.results_path, now_ts))
+    test_loss_data.to_csv('{}/losses/test_looses_{}.csv'.format(args.results_path, now_ts))
+    train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
+    test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
+    plt.title('loss as function of epochs')
+    plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
+    plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
+    plt.legend(['train', 'test'])
+    plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(epoch)))
+
 
 def main():
     print('Photo album listings price prediction using Transformers Attention')
@@ -55,7 +66,7 @@ def main():
     model.eval()
 
     # Setup data loader
-    print('creating data loader...')
+    print('creating data loaders...')
     train_val_loader = create_dataloader(args, train_mode=True)
     all_album_list = [[a, p] for a, p in train_val_loader]
     test_val_loader = create_dataloader(args, train_mode=False)
@@ -110,15 +121,7 @@ def main():
 
         if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, now_ts, i))
-            train_loss_data.to_csv('{}/losses/train_looses_{}.csv'.format(args.results_path, now_ts))
-            test_loss_data.to_csv('{}/losses/test_looses_{}.csv'.format(args.results_path, now_ts))
-            train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
-            test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
-            plt.title('loss as function of epochs')
-            plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
-            plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
-            plt.legend(['train', 'test'])
-            plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(i-1)))
+            save_epochs_loss_results(now_ts, i, train_loss_data, test_loss_data, args)
 
     print('Done\n')
 
