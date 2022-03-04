@@ -11,7 +11,7 @@ from src.utils.utils import create_dataloader
 
 # ----------------------------------------------------------------------
 # Parameters
-parser = argparse.ArgumentParser(description='airbnb_reg: Photo album Event recognition using Transformers Attention.')
+parser = argparse.ArgumentParser(description='airbnb_reg: Photo album listings price prediction using Transformers Attention.')
 parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
 parser.add_argument('--album_path', type=str, default='/home/labs/testing/class63/airbnb')
 parser.add_argument('--val_dir', type=str, default='/home/labs/testing/class63/airbnb')
@@ -40,7 +40,7 @@ parser.add_argument('--save_rate', type=int, default=10)
 
 
 def main():
-    print('Regression network for predicting Airbnb listings prices')
+    print('Photo album listings price prediction using Transformers Attention')
 
     # ----------------------------------------------------------------------
     # Preliminaries
