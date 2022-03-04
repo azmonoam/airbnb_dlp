@@ -63,7 +63,8 @@ def main():
 
     # Setup data loader
     print('creating data loader...')
-    val_loader = create_dataloader(args)
+    train_val_loader = create_dataloader(args, train_mode=True)
+    test_val_loader = create_dataloader(args, train_mode=False)
     print('done\n')
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
@@ -77,7 +78,7 @@ def main():
     now_ts = datetime.datetime.now().strftime('%d-%m-%y %H:%M')
     for i in range(epochs):
         batch = 0
-        for album_batch, price_batch in val_loader:
+        for album_batch, price_batch in train_val_loader:
             album_batch.requires_grad_()
             album_batch = album_batch.cuda()
             pred = model(album_batch)
@@ -95,14 +96,28 @@ def main():
             print('epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
             loss_data = loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
             batch += 1
+
+        batch = 0
+        test_loss = 0
+        for album_batch, price_batch in test_val_loader:
+            album_batch = album_batch.cuda()
+            pred = model(album_batch)
+            pred = pred.to(torch.float)
+            price_batch = price_batch.to(torch.float).cuda()
+
+            test_loss = criterion(pred, price_batch)
+            test_loss += test_loss.to(torch.float).cuda()
+            batch += 1
+
+        test_loss /= batch
+
         if i % args.save_rate == 0:
-            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pth'.format(args.results_path, now_ts, i))
+            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, now_ts, i))
             loss_data.to_csv('{}/losses/looses_{}.csv'.format(args.results_path, now_ts))
             loss_grouped_data = loss_data.groupby(['epoch'], as_index=False).median()
             plt.title('loss as function of epochs')
             plt.plot(loss_grouped_data['epoch'], loss_grouped_data['loss'])
             plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(i-1)))
-
 
     print('Done\n')
 

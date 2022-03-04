@@ -9,21 +9,44 @@ def default_loader(path):
     img = Image.open(path)
     return img.convert('RGB')
 
-def get_impaths_from_dir(dirpath, args=None):
+def get_impaths_from_dir(dirpath,args=None,train_mode=True):
     impaths = []
     labels = []
+    ids = []
+    train_ids_file = open(args.train_ids_path)
+    ids_for_train = []
+    for l in train_ids_file.readlines():
+        ids_for_train.append(l.strip().split("\n")[0])
     cls_dirs = os.listdir(dirpath)
     for cls in cls_dirs:
-        dir_cls = os.path.join(dirpath,cls)
+        dir_cls = os.path.join(dirpath, cls)
         albums = os.listdir(dir_cls)
         # albums = os.listdir(dirpath)
         for album in albums:
-            # imgs_album = os.listdir(os.path.join(dirpath, album))
-            imgs_album = os.listdir(os.path.join(dir_cls, album))
-            # impaths.append([os.path.join(album, img) for img in imgs_album])
-            labels_album = [cls]*len(imgs_album)
-            impaths.append([os.path.join(cls, album, img) for img in imgs_album])
-            labels.append(labels_album)
+            if train_mode:
+                if album in ids_for_train:
+                    # imgs_album = os.listdir(os.path.join(dirpath, album))
+                    imgs_album = os.listdir(os.path.join(dir_cls, album))
+                    # impaths.append([os.path.join(album, img) for img in imgs_album])
+                    labels_album = [cls]*len(imgs_album)
+                    ids_album = [album]*len(imgs_album)
+                    impaths.append([os.path.join(cls, album, img) for img in imgs_album])
+                    labels.append(labels_album)
+                    ids.append(ids_album)
+                else:
+                    pass
+            else:
+                if album not in ids_for_train:
+                    # imgs_album = os.listdir(os.path.join(dirpath, album))
+                    imgs_album = os.listdir(os.path.join(dir_cls, album))
+                    # impaths.append([os.path.join(album, img) for img in imgs_album])
+                    labels_album = [cls]*len(imgs_album)
+                    ids_album = [album]*len(imgs_album)
+                    impaths.append([os.path.join(cls, album, img) for img in imgs_album])
+                    labels.append(labels_album)
+                    ids.append(ids_album)
+                else:
+                    pass
 
 
     # from collections import Counter, defaultdict, OrderedDict
@@ -58,7 +81,7 @@ class DatasetFromList(data.Dataset):
 
     def __init__(self, root, impaths=None, labels=None, scores=None,
                  transform=None, target_transform=None,
-                 loader=default_loader, args=None):
+                 loader=default_loader, args=None, train_mode=True):
         """
         Args:
 
@@ -67,7 +90,7 @@ class DatasetFromList(data.Dataset):
                 on a sample.
         """
         if (impaths is None):
-            impaths, labels = get_impaths_from_dir(root, args)
+            impaths, labels = get_impaths_from_dir(root, args, train_mode=train_mode)
 
         self.root = root
         # self.classes = idx_to_class
