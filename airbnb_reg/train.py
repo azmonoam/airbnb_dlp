@@ -41,48 +41,6 @@ parser.add_argument('--epochs', type=str, default=1000)
 parser.add_argument('--lr', type=str, default=0.001)
 
 
-def get_album(args):
-    files = os.listdir(args.album_path)
-    n_files = len(files)
-    idx_fetch = np.linspace(0, n_files - 1, args.album_clip_length, dtype=int)
-    tensor_batch = torch.zeros(len(idx_fetch), args.input_size, args.input_size, 3)
-    for i, id in enumerate(idx_fetch):
-        im = Image.open(os.path.join(args.album_path, files[id]))
-        im_resize = im.resize((args.input_size, args.input_size))
-        np_img = np.array(im_resize, dtype=np.uint8)
-        tensor_batch[i] = torch.from_numpy(np_img).float() / 255.0
-    tensor_batch = tensor_batch.permute(0, 3, 1, 2).cuda()   # HWC to CHW
-    # tensor_images = torch.unsqueeze(tensor_images, 0).cuda()
-    montage = torchvision.utils.make_grid(tensor_batch).permute(1, 2, 0).cpu()
-    return tensor_batch, montage
-
-
-def inference(tensor_batch, model, classes_list, args):
-    output = torch.squeeze(torch.sigmoid(model(tensor_batch)))
-    np_output = output.cpu().detach().numpy()
-    idx_sort = np.argsort(-np_output)
-    # Top-k
-    detected_classes = np.array(classes_list)[idx_sort][: args.top_k]
-    scores = np_output[idx_sort][: args.top_k]
-    # Threshold
-    idx_th = scores > args.threshold
-    return detected_classes[idx_th], scores[idx_th]
-
-
-def display_image(im, tags, filename, path_dest):
-    if not os.path.exists(path_dest):
-        os.makedirs(path_dest)
-
-    plt.figure()
-    plt.imshow(im)
-    plt.axis('off')
-    plt.axis('tight')
-    plt.rcParams["axes.titlesize"] = 16
-    plt.title("Predicted classes: {}".format(tags))
-    print(os.path.join(path_dest, filename))
-    plt.savefig(os.path.join(path_dest, filename))
-
-
 def main():
     print('airbnb_reg demo of inference code on a single album.')
 
@@ -110,7 +68,6 @@ def main():
     criterion = torch.nn.MSELoss(reduction='mean')
     #criterion = torch.nn.CrossEntropyLoss()
     epochs = args.epochs
-    # visualizer = utils2.Visualizer()
     print('start learning')
 
     losses = []
@@ -144,19 +101,6 @@ def main():
             plt.plot(loss_grouped_data['epoch'], loss_grouped_data['loss'])
             plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(i-1)))
 
-    # Get album
-    tensor_batch, montage = get_album(args)
-
-    # Inference
-    tags, confs = inference(tensor_batch, model, classes_list, args)
-
-    # Visualization
-    display_image(montage, tags, 'result.jpg', os.path.join(args.path_output, args.album_path).replace("./albums", ""))
-
-    # Actual validation process
-    # print('loading album and doing inference...')
-    # map = validate(model, val_loader, classes_list, args.threshold)
-    # print("final validation map: {:.2f}".format(map))
 
     print('Done\n')
 

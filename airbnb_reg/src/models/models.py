@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from airbnb_reg.src.models.tresnet.tresnet import TResNet
+from src.models.tresnet.tresnet import TResNet
 from src.models.utils.registry import register_model
 from src.models.aggregate.layers.frame_pooling_layer import Aggregate
 from src.models.aggregate.layers.transformer_aggregate import TAggregate

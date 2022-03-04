@@ -73,28 +73,9 @@ def create_dataloader(args):
   val_bs = args.batch_size
 
   val_transform = generate_validation_transform(args) #, do_prefetch=False)
-  # val_transform = generate_validation_transform(args,  do_prefetch=False)
-  '''
-  # if args.input_size == 448:  # squish
-  val_tfms = transforms.Compose(
-      [transforms.Resize((args.input_size, args.input_size))])
-  # else:  # crop
-  #   val_tfms = transforms.Compose(
-  #     [transforms.Resize(int(args.input_size / args.val_zoom_factor)),
-  #      transforms.CenterCrop(args.input_size)])
-  val_tfms.transforms.append(transforms.ToTensor())
-  '''
-  # val_dataset1 = ImageFolder(args.val_dir, val_transform)
+
   val_dataset = create_val_dataset(args, val_transform) #val_tfms)
 
-  # creating samplers
-  # train_sampler, val_sampler = create_samplers(args, train_data, valid_data)
-  #val_sampler = ValOrderedSampler(val_dataset, args=args)
-
-  # load data
-  # val_loader = torch.utils.data.DataLoader(
-  #   val_dataset, batch_size=val_bs, shuffle=False,
-  #   num_workers=args.num_workers, collate_fn=video_collate, pin_memory=True, drop_last=False)
 
   valid_dl_pytorch = torch.utils.data.DataLoader(
     val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=True,
