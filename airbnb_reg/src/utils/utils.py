@@ -28,11 +28,11 @@ def vid_transform_fn(x, fn):
   return [fn(Image.fromarray(X.squeeze(dim=0).data.numpy())) for X in x]
 
 
-def create_val_dataset(args, transform, add_extra_data=True):
+def create_val_dataset(args, transform, train_mode=True, add_extra_data=True):
 
     source = args.val_dir
 
-    val_dl = DatasetFromList(source, transform=transform, args=args)
+    val_dl = DatasetFromList(source, train_mode=train_mode, transform=transform, args=args)
 
     return val_dl
 
@@ -51,12 +51,12 @@ def fast_collate(batch, clip_length=None):
 
 
 
-def create_dataloader(args):
+def create_dataloader(args, train_mode):
   val_bs = args.batch_size
 
   val_transform = generate_validation_transform(args) #, do_prefetch=False)
 
-  val_dataset = create_val_dataset(args, val_transform) #val_tfms)
+  val_dataset = create_val_dataset(args, val_transform, train_mode=train_mode) #val_tfms)
 
 
   valid_dl_pytorch = torch.utils.data.DataLoader(
