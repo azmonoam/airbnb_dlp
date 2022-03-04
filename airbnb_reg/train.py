@@ -52,8 +52,12 @@ def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, arg
 
 
 def create_album_list(train_val_loader):
-    all_album_list = [[a, p] for a, p in train_val_loader]
-    listings = [c[0][c[0].find('A') + 1:c[0].find('_')] for c in train_val_loader.dataset.samples]
+    all_album_list = []
+    listings = []
+    for a, p in train_val_loader:
+        all_album_list.append([a, p])
+    for c in train_val_loader.dataset.samples:
+        listings.append(c[0][c[0].find('A') + 1:c[0].find('_')])
     for i in range(len(all_album_list)):
         all_album_list[i].append(listings[i])
     return all_album_list
