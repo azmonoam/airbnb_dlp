@@ -1,17 +1,13 @@
+import argparse
+import datetime
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
-import time
-import argparse
-import os
-import matplotlib.pyplot as plt
-import torchvision.utils
-from PIL import Image
-import numpy as np
+
 from src.models import create_model
-from src.utils.utils import create_dataloader, validate
-from src.models.aggregate.layers.transformer_aggregate import TAggregate
-from src.loss_functions.asymmetric_loss import AsymmetricLoss
-import datetime
+from src.utils.utils import create_dataloader
 
 # ----------------------------------------------------------------------
 # Parameters
@@ -68,7 +64,6 @@ def main():
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
     criterion = torch.nn.MSELoss(reduction='mean')
-    #criterion = torch.nn.CrossEntropyLoss()
     epochs = args.epochs
     print('start learning')
 
@@ -96,7 +91,7 @@ def main():
             loss_data = loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
             batch += 1
         if i % args.save_rate == 0:
-            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pth'.format(args.results_path, now_ts, i))
+            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, now_ts, i))
             loss_data.to_csv('{}/losses/looses_{}.csv'.format(args.results_path, now_ts))
             loss_grouped_data = loss_data.groupby(['epoch'], as_index=False).median()
             plt.title('loss as function of epochs')

@@ -1,16 +1,22 @@
-import os
 from functools import partial
 import torch
 from fastai.torch_core import to_detach
-from torchvision.datasets import Kinetics400
-from torchvision.transforms import transforms
-from torchvision.datasets import ImageFolder
 from PIL import Image
 import numpy as np
 from src.augmentations.generate_transforms import generate_validation_transform
 from src.datasets.pytorch_datasets_parser import DatasetFromList
-from src.samplers.samplers import ValOrderedSampler
-from src.report_manager.utils import AccumMetricG, accuracy, mAP
+from src.report_manager.utils import AccumMetricG, mAP
+from functools import partial
+
+import numpy as np
+import torch
+from PIL import Image
+from fastai.torch_core import to_detach
+
+from src.augmentations.generate_transforms import generate_validation_transform
+from src.datasets.pytorch_datasets_parser import DatasetFromList
+from src.report_manager.utils import AccumMetricG, mAP
+
 
 def trunc_normal_(x, mean=0., std=1.):
   "Truncated normal initialization (approximation)"
