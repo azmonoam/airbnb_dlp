@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+import random
 
 from src.models import create_model
 from src.utils.utils import create_dataloader
@@ -60,6 +61,7 @@ def main():
     # Setup data loader
     print('creating data loader...')
     train_val_loader = create_dataloader(args, train_mode=True)
+    all_album_list = [[a, p] for a, p in train_val_loader]
     test_val_loader = create_dataloader(args, train_mode=False)
     print('done\n')
 
@@ -68,11 +70,13 @@ def main():
     epochs = args.epochs
     print('start learning')
 
-    losses = []
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     now_ts = datetime.datetime.now().strftime('%d-%m-%y %H:%M')
+
     for i in range(epochs):
+        random.seed(datetime.datetime.now().timestamp())
+        random.shuffle(all_album_list)
         batch = 0
         for album_batch, price_batch in train_val_loader:
             album_batch.requires_grad_()
@@ -87,14 +91,12 @@ def main():
             loss.backward()
             optimizer.step()
 
-            loss_number = loss.item()
-            losses.append((loss_number, i, batch))
-            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
-            train_loss_data = train_loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
+            train_loss = loss.item()
+            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, train_loss))
+            train_loss_data = train_loss_data.append({'epoch': i, 'batch': batch, 'loss': train_loss}, ignore_index=True)
             batch += 1
 
         batch = 0
-        test_loss = 0
         for album_batch, price_batch in test_val_loader:
             album_batch = album_batch.cuda()
             pred = model(album_batch)
@@ -102,7 +104,9 @@ def main():
             price_batch = price_batch.to(torch.float).cuda()
 
             test_loss = criterion(pred, price_batch)
-            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
+            test_loss = test_loss.to(torch.float).cuda()
+            test_loss = test_loss.item()
+            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
             test_loss_data = train_loss_data.append({'test: epoch': i, 'batch': batch, 'loss': test_loss}, ignore_index=True)
             batch += 1
 
