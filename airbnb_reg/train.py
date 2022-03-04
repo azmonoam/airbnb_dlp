@@ -1,17 +1,13 @@
+import argparse
+import datetime
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
-import time
-import argparse
-import os
-import matplotlib.pyplot as plt
-import torchvision.utils
-from PIL import Image
-import numpy as np
+
 from src.models import create_model
-from src.utils.utils import create_dataloader, validate
-from src.models.aggregate.layers.transformer_aggregate import TAggregate
-from src.loss_functions.asymmetric_loss import AsymmetricLoss
-import datetime
+from src.utils.utils import create_dataloader
 
 # ----------------------------------------------------------------------
 # Parameters
@@ -69,7 +65,6 @@ def main():
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
     criterion = torch.nn.MSELoss(reduction='mean')
-    #criterion = torch.nn.CrossEntropyLoss()
     epochs = args.epochs
     print('start learning')
 

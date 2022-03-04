@@ -1,12 +1,13 @@
-import torch.nn as nn
 import torch
-from src.models.tresnet.tresnet import TResNet
-from src.models.utils.registry import register_model
+import torch.nn as nn
+import torchvision
+
 from src.models.aggregate.layers.frame_pooling_layer import Aggregate
 from src.models.aggregate.layers.transformer_aggregate import TAggregate
-# from src.models.resnet.resnet import Bottleneck as ResnetBottleneck
 from src.models.resnet.resnet import ResNet
-import torchvision
+from src.models.tresnet.tresnet import TResNet
+from src.models.utils.registry import register_model
+
 __all__ = ['MTResnetAggregate']
 
 

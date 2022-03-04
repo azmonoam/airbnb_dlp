@@ -1,9 +1,10 @@
-from PIL import Image
-import torch.utils.data as data
 import itertools
 import os
+
 import numpy as np
-import torch
+import torch.utils.data as data
+from PIL import Image
+
 
 def default_loader(path):
     img = Image.open(path)
