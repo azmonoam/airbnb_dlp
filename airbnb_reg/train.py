@@ -50,13 +50,9 @@ def main():
     # Setup model
     print('creating and loading the model...')
     # state = torch.load(args.model_path, map_location='cpu')
-    # args.num_classes = state['num_classes']
     model = create_model(args).cuda()
     # model.load_state_dict(state['model'], strict=True)
     model.eval()
-    idx_to_class = {i: i for i in range(16)}
-    idx_to_class.update({i: i+1 for i in range(16, 20)})
-    classes_list = np.array(list(idx_to_class.values()))
 
     # Setup data loader
     print('creating data loader...')
@@ -93,7 +89,8 @@ def main():
 
             train_loss = loss.item()
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, train_loss))
-            train_loss_data = train_loss_data.append({'epoch': i, 'batch': batch, 'loss': train_loss}, ignore_index=True)
+            train_loss_data = pd.concat([train_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [train_loss]})],
+                                        ignore_index=True, axis=0)
             batch += 1
 
         batch = 0
@@ -107,7 +104,8 @@ def main():
             test_loss = test_loss.to(torch.float).cuda()
             test_loss = test_loss.item()
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
-            test_loss_data = train_loss_data.append({'test: epoch': i, 'batch': batch, 'loss': test_loss}, ignore_index=True)
+            train_loss_data = pd.concat([train_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
+                                        ignore_index=True, axis=0)
             batch += 1
 
         if i % args.save_rate == 0:
