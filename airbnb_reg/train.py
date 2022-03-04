@@ -39,6 +39,8 @@ parser.add_argument('--results_path', type=str, default='/home/labs/testing/clas
 parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/train_ids.txt')
 parser.add_argument('--epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
+parser.add_argument('--save_rate', type=int, default=10)
+
 
 
 def main():
@@ -93,7 +95,7 @@ def main():
             print('epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
             loss_data = loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
             batch += 1
-        if i % 10 == 0:
+        if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pth'.format(args.results_path, now_ts, i))
             loss_data.to_csv('{}/losses/looses_{}.csv'.format(args.results_path, now_ts))
             loss_grouped_data = loss_data.groupby(['epoch'], as_index=False).median()
