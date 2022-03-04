@@ -44,30 +44,6 @@ def fast_collate(batch, clip_length=None):
   return tensor_uint8_CHW.float(), targets  # , extra_data
 
 
-# def video_collate(batch):
-#   is_np = isinstance(batch[0][0][0], np.ndarray)
-#   T = len(batch[0][0])  # number of images
-#
-#   targets = torch.tensor([b[1] for b in batch])
-#   batch_size = len(batch)
-#   if is_np:
-#     dims = (batch[0][0][0].shape[2], batch[0][0][0].shape[0], batch[0][0][0].shape[1])
-#     tensor_uint8_CHW = torch.empty((T * batch_size, *dims), dtype=torch.uint8)
-#     for i in range(batch_size):
-#       for t in range(T):
-#         tensor_uint8_CHW[i * T + t] = \
-#           torch.from_numpy(batch[i][0][t]).permute(2, 0, 1)
-#     return tensor_uint8_CHW, targets
-#
-#   else:
-#     dims = (batch[0][0][0].shape[0], batch[0][0][0].shape[1], batch[0][0][0].shape[2])
-#     tensor_float_CHW = torch.empty((T * batch_size, *dims), dtype=torch.float)
-#     for i in range(batch_size):
-#       for t in range(T):
-#         tensor_float_CHW[i * T + t] = batch[i][0][t]
-#     return tensor_float_CHW, targets
-
-
 
 def create_dataloader(args):
   val_bs = args.batch_size
