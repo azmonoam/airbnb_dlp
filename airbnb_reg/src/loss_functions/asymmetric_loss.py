@@ -94,7 +94,7 @@ def edit_targets_parital_labels(args, targets, targets_weights, xs_neg):
 
     elif args.partial_loss_mode == 'real_partial':
         # remove all unsure targets (targets_weights=0)
-        targets_weights = torch.ones(targets.shape, device=torch.device('cuda'))
+        targets_weights = torch.ones(targets.shape) #device=torch.device('cuda'))
         targets_weights[targets == -1] = 0
 
     return targets, targets_weights, xs_neg

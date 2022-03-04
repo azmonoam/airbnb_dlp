@@ -9,7 +9,7 @@ def default_loader(path):
     img = Image.open(path)
     return img.convert('RGB')
 
-def get_impaths_from_dir(dirpath,train=True ,args=None):
+def get_impaths_from_dir(dirpath,args=None,train_mode=True):
     impaths = []
     labels = []
     ids = []
@@ -23,7 +23,7 @@ def get_impaths_from_dir(dirpath,train=True ,args=None):
         albums = os.listdir(dir_cls)
         # albums = os.listdir(dirpath)
         for album in albums:
-            if train:
+            if train_mode:
                 if album in ids_for_train:
                     # imgs_album = os.listdir(os.path.join(dirpath, album))
                     imgs_album = os.listdir(os.path.join(dir_cls, album))
@@ -81,7 +81,7 @@ class DatasetFromList(data.Dataset):
 
     def __init__(self, root, impaths=None, labels=None, scores=None,
                  transform=None, target_transform=None,
-                 loader=default_loader, args=None):
+                 loader=default_loader, args=None, train_mode=True):
         """
         Args:
 
@@ -90,7 +90,7 @@ class DatasetFromList(data.Dataset):
                 on a sample.
         """
         if (impaths is None):
-            impaths, labels = get_impaths_from_dir(root, args, train=True)
+            impaths, labels = get_impaths_from_dir(root, args, train_mode=train_mode)
 
         self.root = root
         # self.classes = idx_to_class

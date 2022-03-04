@@ -24,7 +24,7 @@ class SDLLoss(nn.Module):
         # Compute dot product for the output matrix A with every wordvec in the dictionary
         # init loss variable
         batch_size = y.size()[0]
-        l = torch.zeros(batch_size).cuda()
+        l = torch.zeros(batch_size)#.cuda()
 
         # X is in a vector of size kx300, we need to unflat it into a matrix A
         un_flat = x.view(x.shape[0], self.embed_len, -1)

@@ -14,7 +14,7 @@ def to_sdl(model, args):
     num_features = model.num_features
     model = model.body
     model.add_module('global_avg_pool', GlobalAvgPool2dResNext())
-    model.add_module('embedding', Linear(num_features, args.num_rows * args.wordvec_dim, bias=False).cuda())
+    model.add_module('embedding', Linear(num_features, args.num_rows * args.wordvec_dim, bias=False))#.cuda())
     return model
 
 

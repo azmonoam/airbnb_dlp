@@ -35,7 +35,7 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
-parser.add_argument('--train_ids_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_exdata/train_ids.txt')
+parser.add_argument('--train_ids_path', type=str, default='/Users/leeatgen/airbnb_dlp/train_ids.txt')
 
 def get_album(args):
     files = os.listdir(args.album_path)
@@ -90,7 +90,7 @@ def main():
     print('creating and loading the model...')
     # state = torch.load(args.model_path, map_location='cpu')
     # args.num_classes = state['num_classes']
-    model = create_model(args).cuda()
+    model = create_model(args)#.cuda()
     # model.load_state_dict(state['model'], strict=True)
     model.eval()
     idx_to_class = {i: i for i in range(16)}
@@ -100,7 +100,8 @@ def main():
 
     # Setup data loader
     print('creating data loader...')
-    val_loader = create_dataloader(args, train=True)
+    train_val_loader = create_dataloader(args, train_mode=True)
+    test_val_loader = create_dataloader(args, train_mode=False)
     print('done\n')
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
@@ -114,9 +115,9 @@ def main():
     for i in range(epochs):
         #t0 = time.time()
         batch = 0
-        for album_batch, price_batch, ids in val_loader:
+        for album_batch, price_batch, ids in train_val_loader:
             album_batch.requires_grad_()
-            album_batch = album_batch.cuda()
+            album_batch = album_batch#.cuda()
             t1 = time.time()
             pred = model(album_batch)
             t2 = time.time()
@@ -127,10 +128,10 @@ def main():
                 pred_table['ids'] = ids
                 pred_table['pred'] = pred
                 pred_table.to_csv('pred_table_epoch{}.csv'.format(i), index=False)
-            price_batch = price_batch.to(torch.float).cuda()
+            price_batch = price_batch.to(torch.float)#.cuda()
             # print(album, pred, price)
             loss = criterion(pred, price_batch)
-            loss = loss.to(torch.float).cuda()
+            loss = loss.to(torch.float)#.cuda()
             # acc = accuracy(pred, price)
 
             optimizer.zero_grad()
@@ -146,7 +147,26 @@ def main():
             batch += 1
         if i % 10 == 0:
             torch.save(model.state_dict(), '/home/labs/testing/class63/model_ep_{}.pth'.format(i))
+
+        for album_batch, price_batch, ids in test_val_loader:
+            album_batch = album_batch#.cuda()
+            #t1 = time.time()
+            pred = model(album_batch)
+            #t2 = time.time()
+            #print("model time {}".format(str(t2 - t1)))
+            pred = pred.to(torch.float)
+            if i%10 == 0:
+                pred_table = pd.DataFrame()
+                pred_table['ids'] = ids
+                pred_table['pred'] = pred
+                pred_table.to_csv('test_pred_table_epoch{}.csv'.format(i), index=False)
+            price_batch = price_batch.to(torch.float)#.cuda()
+            # print(album, pred, price)
+            loss = criterion(pred, price_batch)
+            loss = loss.to(torch.float)#.cuda()
+
         ## TODO : load test data loader with val_loader = create_dataloader(args, train=False) and run test epoch
+
 
     # Get album
     tensor_batch, montage = get_album(args)

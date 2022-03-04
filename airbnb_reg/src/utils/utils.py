@@ -22,11 +22,11 @@ def vid_transform_fn(x, fn):
   return [fn(Image.fromarray(X.squeeze(dim=0).data.numpy())) for X in x]
 
 
-def create_val_dataset(args, transform, add_extra_data=True):
+def create_val_dataset(args, transform,train_mode=True, add_extra_data=True):
 
     source = args.val_dir
 
-    val_dl = DatasetFromList(source, transform=transform, args=args, train=True)
+    val_dl = DatasetFromList(source, transform=transform, args=args, train_mode=train_mode)
 
     return val_dl
 
@@ -69,7 +69,7 @@ def fast_collate(batch, clip_length=None):
 
 
 
-def create_dataloader(args, train=True):
+def create_dataloader(args, train_mode=True):
   val_bs = args.batch_size
 
   val_transform = generate_validation_transform(args) #, do_prefetch=False)
@@ -85,7 +85,7 @@ def create_dataloader(args, train=True):
   val_tfms.transforms.append(transforms.ToTensor())
   '''
   # val_dataset1 = ImageFolder(args.val_dir, val_transform)
-  val_dataset = create_val_dataset(args, val_transform, train=True) #val_tfms)
+  val_dataset = create_val_dataset(args, val_transform, train_mode=train_mode) #val_tfms)
 
 
   # creating samplers
