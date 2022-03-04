@@ -115,7 +115,7 @@ def main():
     for i in range(epochs):
         #t0 = time.time()
         batch = 0
-        for album_batch, price_batch, ids in train_val_loader:
+        for album_batch, price_batch in train_val_loader:
             album_batch.requires_grad_()
             album_batch = album_batch#.cuda()
             t1 = time.time()
@@ -123,11 +123,11 @@ def main():
             t2 = time.time()
             print("model time {}".format(str(t2 - t1)))
             pred = pred.to(torch.float)
-            if i%10 == 0:
-                pred_table = pd.DataFrame()
-                pred_table['ids'] = ids
-                pred_table['pred'] = pred
-                pred_table.to_csv('pred_table_epoch{}.csv'.format(i), index=False)
+            #if i%10 == 0:
+            #    pred_table = pd.DataFrame()
+            #    pred_table['ids'] = ids
+            #    pred_table['pred'] = pred
+            #    pred_table.to_csv('pred_table_epoch{}.csv'.format(i), index=False)
             price_batch = price_batch.to(torch.float)#.cuda()
             # print(album, pred, price)
             loss = criterion(pred, price_batch)
@@ -146,20 +146,20 @@ def main():
             print('epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
             batch += 1
         if i % 10 == 0:
-            torch.save(model.state_dict(), '/home/labs/testing/class63/model_ep_{}.pth'.format(i))
+            torch.save(model.state_dict(), f'/Users/leeatgen/airbnb_dlp/model_saving/model_{i}.pkl')
 
-        for album_batch, price_batch, ids in test_val_loader:
+        for album_batch, price_batch in test_val_loader:
             album_batch = album_batch#.cuda()
             #t1 = time.time()
             pred = model(album_batch)
             #t2 = time.time()
             #print("model time {}".format(str(t2 - t1)))
             pred = pred.to(torch.float)
-            if i%10 == 0:
-                pred_table = pd.DataFrame()
-                pred_table['ids'] = ids
-                pred_table['pred'] = pred
-                pred_table.to_csv('test_pred_table_epoch{}.csv'.format(i), index=False)
+            #if i%10 == 0:
+            #    pred_table = pd.DataFrame()
+            #    pred_table['ids'] = ids
+            #    pred_table['pred'] = pred
+            #    pred_table.to_csv('test_pred_table_epoch{}.csv'.format(i), index=False)
             price_batch = price_batch.to(torch.float)#.cuda()
             # print(album, pred, price)
             loss = criterion(pred, price_batch)
