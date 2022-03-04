@@ -40,7 +40,7 @@ parser.add_argument('--save_rate', type=int, default=10)
 
 
 def main():
-    print('airbnb_reg demo of inference code on a single album.')
+    print('Regression network for predicting Airbnb listings prices')
 
     # ----------------------------------------------------------------------
     # Preliminaries
@@ -69,7 +69,8 @@ def main():
     print('start learning')
 
     losses = []
-    loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
+    train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
+    test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     now_ts = datetime.datetime.now().strftime('%d-%m-%y %H:%M')
     for i in range(epochs):
         batch = 0
@@ -88,8 +89,8 @@ def main():
 
             loss_number = loss.item()
             losses.append((loss_number, i, batch))
-            print('epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
-            loss_data = loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
+            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
+            train_loss_data = train_loss_data.append({'epoch': i, 'batch': batch, 'loss': loss_number}, ignore_index=True)
             batch += 1
 
         batch = 0
@@ -101,17 +102,20 @@ def main():
             price_batch = price_batch.to(torch.float).cuda()
 
             test_loss = criterion(pred, price_batch)
-            test_loss += test_loss.to(torch.float).cuda()
+            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, loss_number))
+            test_loss_data = train_loss_data.append({'test: epoch': i, 'batch': batch, 'loss': test_loss}, ignore_index=True)
             batch += 1
-
-        test_loss /= batch
 
         if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, now_ts, i))
-            loss_data.to_csv('{}/losses/looses_{}.csv'.format(args.results_path, now_ts))
-            loss_grouped_data = loss_data.groupby(['epoch'], as_index=False).median()
+            train_loss_data.to_csv('{}/losses/train_looses_{}.csv'.format(args.results_path, now_ts))
+            test_loss_data.to_csv('{}/losses/test_looses_{}.csv'.format(args.results_path, now_ts))
+            train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
+            test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
             plt.title('loss as function of epochs')
-            plt.plot(loss_grouped_data['epoch'], loss_grouped_data['loss'])
+            plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
+            plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
+            plt.legend(['train', 'test'])
             plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(i-1)))
 
     print('Done\n')
