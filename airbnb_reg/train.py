@@ -40,8 +40,8 @@ parser.add_argument('--save_rate', type=int, default=10)
 
 
 def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, args):
-    train_loss_data.to_csv('{}/losses/train_looses_{}.csv'.format(args.results_path, now_ts))
-    test_loss_data.to_csv('{}/losses/test_looses_{}.csv'.format(args.results_path, now_ts))
+    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, now_ts))
+    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, now_ts))
     train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
     test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
     plt.title('loss as function of epochs')
@@ -91,7 +91,7 @@ def main():
 
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
-    now_ts = datetime.datetime.now().strftime('%d-%m-%y %H:%M')
+    now_ts = datetime.datetime.now().strftime('%d-%m-%y_%H:%M')
 
     for i in range(epochs):
         random.seed(datetime.datetime.now().timestamp())
@@ -127,7 +127,7 @@ def main():
             test_loss = test_loss.to(torch.float).cuda()
             test_loss = test_loss.item()
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
-            train_loss_data = pd.concat([train_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
+            test_loss_data = pd.concat([test_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
                                         ignore_index=True, axis=0)
             batch += 1
 
