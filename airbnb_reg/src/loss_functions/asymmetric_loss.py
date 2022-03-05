@@ -81,7 +81,7 @@ def edit_targets_parital_labels(args, targets, targets_weights, xs_neg):
         targets_weights = 1.0
     elif args.partial_loss_mode == 'negative_backprop':
         if targets_weights is None or targets_weights.shape != targets.shape:
-            targets_weights = torch.ones(targets.shape, device=torch.device('cuda'))
+            targets_weights = torch.ones(targets.shape)#, device=torch.device('cuda'))
         else:
             targets_weights[:] = 1.0
         num_top_confused_classes_to_remove_backprop = args.num_classes_to_remove_negative_backprop * \
@@ -94,7 +94,7 @@ def edit_targets_parital_labels(args, targets, targets_weights, xs_neg):
 
     elif args.partial_loss_mode == 'real_partial':
         # remove all unsure targets (targets_weights=0)
-        targets_weights = torch.ones(targets.shape, device=torch.device('cuda'))
+        targets_weights = torch.ones(targets.shape)#, device=torch.device('cuda'))
         targets_weights[targets == -1] = 0
 
     return targets, targets_weights, xs_neg

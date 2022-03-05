@@ -14,15 +14,15 @@ from src.utils.utils import create_dataloader
 # Parameters
 parser = argparse.ArgumentParser(description='airbnb_reg: Photo album listings price prediction using Transformers Attention.')
 parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
-parser.add_argument('--album_path', type=str, default='/home/labs/testing/class63/airbnb')
-parser.add_argument('--val_dir', type=str, default='/home/labs/testing/class63/airbnb')
+parser.add_argument('--album_path', type=str, default='/Users/leeatgen/PycharmProjects/airbnb_ex')
+parser.add_argument('--val_dir', type=str, default='/Users/leeatgen/PycharmProjects/airbnb_ex')
 parser.add_argument('--num_classes', type=int, default=1)
 parser.add_argument('--model_name', type=str, default='mtresnetaggregate')
 parser.add_argument('--transformers_pos', type=int, default=1)
 parser.add_argument('--input_size', type=int, default=224)
 parser.add_argument('--transform_type', type=str, default='squish')
 parser.add_argument('--album_sample', type=str, default='rand_permute')
-parser.add_argument('--dataset_path', type=str, default='/home/labs/testing/class63/airbnb')
+parser.add_argument('--dataset_path', type=str, default='/Users/leeatgen/PycharmProjects/airbnb_ex')
 parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
 parser.add_argument('--path_output', type=str, default='./outputs')
 parser.add_argument('--use_transformer', type=int, default=1)
@@ -32,11 +32,13 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
-parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/results')
-parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/train_ids.txt')
+parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/results')
+parser.add_argument('--train_ids_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/train_ids.txt')
 parser.add_argument('--epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
+#parser.add_argument('--files', type=int, default=1)
+
 
 
 def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, args):
@@ -74,7 +76,7 @@ def main():
     # Setup model
     print('creating and loading the model...')
     # state = torch.load(args.model_path, map_location='cpu')
-    model = create_model(args).cuda()
+    model = create_model(args)#.cuda()
     # model.load_state_dict(state['model'], strict=True)
     model.eval()
 
@@ -100,12 +102,12 @@ def main():
         batch = 0
         for album_batch, price_batch, id in all_album_list:
             album_batch.requires_grad_()
-            album_batch = album_batch.cuda()
+            album_batch = album_batch#.cuda()
             pred = model(album_batch)
             pred = pred.to(torch.float)
-            price_batch = price_batch.to(torch.float).cuda()
+            price_batch = price_batch.to(torch.float)#.cuda()
             loss = criterion(pred, price_batch)
-            loss = loss.to(torch.float).cuda()
+            loss = loss.to(torch.float)#.cuda()
 
             optimizer.zero_grad()
             loss.backward()
@@ -119,13 +121,13 @@ def main():
 
         batch = 0
         for album_batch, price_batch in test_val_loader:
-            album_batch = album_batch.cuda()
+            album_batch = album_batch#.cuda()
             pred = model(album_batch)
             pred = pred.to(torch.float)
-            price_batch = price_batch.to(torch.float).cuda()
+            price_batch = price_batch.to(torch.float)#.cuda()
 
             test_loss = criterion(pred, price_batch)
-            test_loss = test_loss.to(torch.float).cuda()
+            test_loss = test_loss.to(torch.float)#.cuda()
             test_loss = test_loss.item()
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
             test_loss_data = pd.concat([test_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],

@@ -44,7 +44,7 @@ def get_album(args):
         im_resize = im.resize((args.input_size, args.input_size))
         np_img = np.array(im_resize, dtype=np.uint8)
         tensor_batch[i] = torch.from_numpy(np_img).float() / 255.0
-    tensor_batch = tensor_batch.permute(0, 3, 1, 2).cuda()   # HWC to CHW
+    tensor_batch = tensor_batch.permute(0, 3, 1, 2)#.cuda()   # HWC to CHW
     # tensor_images = torch.unsqueeze(tensor_images, 0).cuda()
     montage = torchvision.utils.make_grid(tensor_batch).permute(1, 2, 0).cpu()
     return tensor_batch, montage
@@ -89,7 +89,7 @@ def main():
     print('creating and loading the model...')
     state = torch.load(args.model_path, map_location='cpu')
     # args.num_classes = state['num_classes']
-    model = create_model(args).cuda()
+    model = create_model(args)#.cuda()
     model.load_state_dict(state['model'], strict=True)
     model.eval()
     classes_list = np.array(list(state['idx_to_class'].values()))
