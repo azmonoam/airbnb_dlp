@@ -14,15 +14,15 @@ from src.utils.utils import create_dataloader
 # Parameters
 parser = argparse.ArgumentParser(description='airbnb_reg: Photo album listings price prediction using Transformers Attention.')
 parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
-parser.add_argument('--album_path', type=str, default='/home/labs/testing/class63/airbnb')
-parser.add_argument('--val_dir', type=str, default='/home/labs/testing/class63/airbnb')
+parser.add_argument('--album_path', type=str, default='/Users/talsokolov/Desktop/airbnb_dlp/airbnb2')
+parser.add_argument('--val_dir', type=str, default='/Users/talsokolov/Desktop/airbnb_dlp/airbnb2')
 parser.add_argument('--num_classes', type=int, default=1)
 parser.add_argument('--model_name', type=str, default='mtresnetaggregate')
 parser.add_argument('--transformers_pos', type=int, default=1)
 parser.add_argument('--input_size', type=int, default=224)
 parser.add_argument('--transform_type', type=str, default='squish')
 parser.add_argument('--album_sample', type=str, default='rand_permute')
-parser.add_argument('--dataset_path', type=str, default='/home/labs/testing/class63/airbnb')
+parser.add_argument('--dataset_path', type=str, default='/Users/talsokolov/Desktop/airbnb_dlp/airbnb2')
 parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
 parser.add_argument('--path_output', type=str, default='./outputs')
 parser.add_argument('--use_transformer', type=int, default=1)
@@ -32,8 +32,8 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
-parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/results')
-parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/train_ids.txt')
+parser.add_argument('--results_path', type=str, default='/Users/talsokolov/Desktop/airbnb_dlp/airbnb_reg/results')
+parser.add_argument('--train_ids_path', type=str, default='/Users/talsokolov/PycharmProjects/DL4CV/finalproj/train_ids.txt')
 parser.add_argument('--epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
@@ -136,6 +136,8 @@ def main():
             save_epochs_loss_results(now_ts, i, train_loss_data, test_loss_data, args)
 
     print('Done\n')
+
+
 
 if __name__ == '__main__':
     main()
