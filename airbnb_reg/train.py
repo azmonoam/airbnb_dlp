@@ -97,7 +97,7 @@ def main():
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
-        for album_batch, price_batch, id in all_album_list:
+        for album_batch, price_batch in train_val_loader:
             album_batch.requires_grad_()
             album_batch = album_batch.cuda()
             pred = model(album_batch)
