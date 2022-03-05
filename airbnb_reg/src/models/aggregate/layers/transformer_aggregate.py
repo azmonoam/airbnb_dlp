@@ -101,6 +101,7 @@ class TAggregate(nn.Module):
           files.append(os.path.splitext(os.path.basename(filenames[fn]))[0])
         if self.args.save_attention:
           torch.save(attn_weight[b], os.path.join('outputs', album_name + '_attn.pt'))
+          torch.save(files, os.path.join('outputs', album_name + '_order.pt'))
         if self.args.save_embeddings:
           torch.save(pre_aggregate[b], os.path.join('outputs', album_name + '_embeddings4img.pt'))
         with open(os.path.join('outputs', album_name + '_files.pickle'), 'wb') as handle:
