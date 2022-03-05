@@ -45,7 +45,7 @@ def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, arg
     train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
     test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
     plt.figure()
-    plt.title('loss as function of epochs')
+    plt.title('loss as function of epochs - lr:{}'.format(args.lr))
     plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
     plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
     plt.legend(['train', 'test'])
