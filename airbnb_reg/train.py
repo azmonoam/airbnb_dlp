@@ -37,6 +37,9 @@ parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/cl
 parser.add_argument('--epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
+parser.add_argument('--save_attention', type=bool, default=True)
+parser.add_argument('--save_embeddings', type=bool, default=True)
+
 
 
 def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, args):
@@ -102,10 +105,10 @@ def main():
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
-        for album_batch, price_batch, id in all_album_list:
+        for album_batch, price_batch, images_paths in all_album_list:
             album_batch.requires_grad_()
             album_batch = album_batch.cuda()
-            pred = model(album_batch)
+            pred = model(album_batch, images_paths)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float).cuda()
             loss = criterion(pred, price_batch)
@@ -124,7 +127,7 @@ def main():
         batch = 0
         for album_batch, price_batch in test_val_loader:
             album_batch = album_batch.cuda()
-            pred = model(album_batch)
+            pred = model(album_batch, images_paths)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float).cuda()
 
