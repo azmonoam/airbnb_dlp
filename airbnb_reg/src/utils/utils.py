@@ -105,8 +105,8 @@ def validate(model, val_loader, classes_list, threshold):
 
   with torch.no_grad():
     for input, target in val_loader:
-      input = input.cuda() / 255.0
-      target = target.cuda()
+      input = input/225.0 #.cuda() / 255.0
+      target = target#.cuda()
       thresh = 0.6
       logits = model(input)
       preds = torch.sigmoid(logits)

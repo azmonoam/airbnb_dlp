@@ -73,7 +73,7 @@ def main():
     # Setup model
     print('creating and loading the model...')
     # state = torch.load(args.model_path, map_location='cpu')
-    model = create_model(args).cuda()
+    model = create_model(args)#.cuda()
     # model.load_state_dict(state['model'], strict=True)
     model.eval()
 
@@ -99,12 +99,12 @@ def main():
         batch = 0
         for album_batch, price_batch, id in all_album_list:
             album_batch.requires_grad_()
-            album_batch = album_batch.cuda()
+            album_batch = album_batch#.cuda()
             pred = model(album_batch)
             pred = pred.to(torch.float)
-            price_batch = price_batch.to(torch.float).cuda()
+            price_batch = price_batch.to(torch.float)#.cuda()
             loss = criterion(pred, price_batch)
-            loss = loss.to(torch.float).cuda()
+            loss = loss.to(torch.float)#.cuda()
 
             optimizer.zero_grad()
             loss.backward()
@@ -118,13 +118,13 @@ def main():
 
         batch = 0
         for album_batch, price_batch in test_val_loader:
-            album_batch = album_batch.cuda()
+            album_batch = album_batch#.cuda()
             pred = model(album_batch)
             pred = pred.to(torch.float)
-            price_batch = price_batch.to(torch.float).cuda()
+            price_batch = price_batch.to(torch.float)#.cuda()
 
             test_loss = criterion(pred, price_batch)
-            test_loss = test_loss.to(torch.float).cuda()
+            test_loss = test_loss.to(torch.float)#.cuda()
             test_loss = test_loss.item()
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
             test_loss_data = pd.concat([test_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
