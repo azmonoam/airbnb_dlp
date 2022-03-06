@@ -160,7 +160,7 @@ def main():
         if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
             save_epochs_loss_results(i, train_loss_data, test_loss_data, args)
-
+    pred_data.to_csv('{}/losses/predictions_{}.csv'.format(args.results_path, args.start_ts))
     print('Done\n')
 
 if __name__ == '__main__':
