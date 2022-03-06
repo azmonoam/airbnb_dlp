@@ -109,10 +109,10 @@ def main():
         random.shuffle(all_album_list)
         batch = 0
         for album_batch, price_batch, images_paths in all_album_list:
-            epoch_batch = str(i) +"_"+ str(batch)
+            epoch_num = int(i)
             album_batch.requires_grad_()
             album_batch = album_batch.cuda()
-            pred = model(album_batch, images_paths, epoch_batch)
+            pred = model(album_batch, images_paths, epoch_num)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float).cuda()
             loss = criterion(pred, price_batch)
@@ -138,7 +138,7 @@ def main():
         batch = 0
         for album_batch, price_batch in test_val_loader:
             album_batch = album_batch.cuda()
-            pred = model(album_batch, images_paths)
+            pred = model(album_batch, images_paths, epoch_num)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float).cuda()
 

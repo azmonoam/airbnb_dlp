@@ -77,7 +77,7 @@ class TAggregate(nn.Module):
       nn.init.constant_(m.bias, 0)
       nn.init.constant_(m.weight, 1.0)
 
-  def forward(self, x, filenames=None, epoch_batch=None):
+  def forward(self, x, filenames=None, epoch_num=None):
     nvids = x.shape[0] // self.clip_length
     x = x.view((nvids, self.clip_length, -1))
     pre_aggregate = torch.clone(x)
@@ -86,13 +86,11 @@ class TAggregate(nn.Module):
     if self.args.transformers_pos:
       x = x + self.pos_embed
     # x = self.pos_drop(x)
-
-    epoch, batch = epoch_batch.split("_")
     x.transpose_(1, 0)
     o, attn_weight = self.transformer_enc(x)
     o.transpose_(1, 0)
     # save attn_weight as a pickle file
-    if filenames and (int(epoch) % self.args.epochs == 0):
+    if filenames and (epoch_num % self.args.epochs == 0):
       for b in range(nvids):
         # get album name:
         album_name = filenames[b * self.clip_length].split('/')[-2]
