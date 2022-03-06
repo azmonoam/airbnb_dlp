@@ -53,7 +53,7 @@ def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
     plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
     plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
     plt.legend(['train', 'test'])
-    plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, args.start_ts, str(epoch)))
+    plt.savefig('{}/losses/losses_{}_ep_{}.jpg'.format(args.results_path, args.start_ts, str(epoch)))
 
 
 def create_album_list(train_val_loader):
