@@ -19,11 +19,12 @@ class fTResNet(TResNet):
     resnet152_model = torchvision.models.resnet152(pretrained=True)
     model = nn.Sequential(*(list(resnet152_model.children())[:-1]))
     self.body = model
+    #self.start_ts = args.start_ts
     # self.global_pool = 'avg'
     #   if 'global_pool' in kwargs:
     #       self.global_pool = kwargs[]
 
-  def forward(self, x, filenames=None):
+  def forward(self, x, filenames=None, epoch_batch=None):
     with torch.no_grad():
         x = self.body(x)
     self.embeddings = self.global_pool(x)
@@ -32,7 +33,7 @@ class fTResNet(TResNet):
         # self.embeddings = self.aggregate(self.embeddings, filenames)
         # self.embeddings, attn_mat = self.aggregate(self.embeddings, filenames)
         if isinstance(self.aggregate,TAggregate):
-           self.embeddings, self.attention = self.aggregate(self.embeddings, filenames)
+           self.embeddings, self.attention = self.aggregate(self.embeddings, filenames, epoch_batch)
            logits = self.head(self.embeddings)
         else:# CNN aggregation:
             logits = self.head(self.embeddings)

@@ -34,7 +34,7 @@ parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
 parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/results')
 parser.add_argument('--train_ids_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/train_ids.txt')
-parser.add_argument('--epochs', type=int, default=1000)
+parser.add_argument('--epochs', type=int, default=1)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
@@ -102,15 +102,18 @@ def main():
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     now_ts = datetime.datetime.now().strftime('%d-%m-%y_%H:%M')
+    args.start_ts = now_ts
 
-    for i in range(epochs):
+    for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
+
         for album_batch, price_batch, images_paths in all_album_list:
+            epoch_batch = str(i) +"_"+ str(batch)
             album_batch.requires_grad_()
             album_batch = album_batch#.cuda()
-            pred = model(album_batch, images_paths)
+            pred = model(album_batch, images_paths, epoch_batch)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float)#.cuda()
             loss = criterion(pred, price_batch)
