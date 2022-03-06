@@ -93,6 +93,7 @@ def main():
     train_val_loader = create_dataloader(args, train_mode=True)
     all_album_list = create_album_list(train_val_loader)
     test_val_loader = create_dataloader(args, train_mode=False)
+    test_album_list = create_album_list(test_val_loader)
     print('done\n')
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
@@ -136,7 +137,7 @@ def main():
             batch += 1
 
         batch = 0
-        for album_batch, price_batch in test_val_loader:
+        for album_batch, price_batch in test_album_list:
             album_batch = album_batch.cuda()
             pred = model(album_batch, images_paths, epoch_num)
             pred = pred.to(torch.float)
@@ -152,8 +153,8 @@ def main():
                 for j in range(0, pred.shape[0]):
                     ind = j * args.album_clip_length
                     pred_data = pd.concat([pred_data, pd.DataFrame({'type': 'test', 'id':
-                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach().cuda(),
-                                                                    'pred': pred[j].detach().cuda()})], ignore_index=True,
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach().cpu(),
+                                                                    'pred': pred[j].detach().cpu()})], ignore_index=True,
                                           axis=0)
             batch += 1
 
