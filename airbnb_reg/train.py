@@ -37,7 +37,8 @@ parser.add_argument('--train_ids_path', type=str, default='/Users/leeatgen/airbn
 parser.add_argument('--epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
-#parser.add_argument('--files', type=int, default=1)
+parser.add_argument('--save_attention', type=bool, default=True)
+parser.add_argument('--save_embeddings', type=bool, default=False)
 
 
 
