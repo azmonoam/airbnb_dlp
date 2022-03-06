@@ -62,11 +62,13 @@ def create_album_list(train_val_loader):
     for a, p in train_val_loader:
         all_album_list.append([a, p])
     num_apt = len(all_album_list[0][0])
+    batch = 0
     for j in range(0, len(train_val_loader.dataset.samples), num_apt):
         id_list = []
-        for i in range(0, num_apt):
+        for i in range(0, len(all_album_list[batch][0])):
             id_list.append(train_val_loader.dataset.samples[j+i][0])
         listings.append(id_list)
+        batch += 1
     for i in range(len(all_album_list)):
         all_album_list[i].append(listings[i])
     return all_album_list
