@@ -137,7 +137,7 @@ def main():
             batch += 1
 
         batch = 0
-        for album_batch, price_batch in test_album_list:
+        for album_batch, price_batch, images_paths  in test_album_list:
             album_batch = album_batch.cuda()
             pred = model(album_batch, images_paths, epoch_num)
             pred = pred.to(torch.float)
