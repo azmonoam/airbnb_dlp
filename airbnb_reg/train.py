@@ -93,7 +93,7 @@ def main():
     train_val_loader = create_dataloader(args, train_mode=True)
     all_album_list = create_album_list(train_val_loader)
     test_val_loader = create_dataloader(args, train_mode=False)
-    test_album_list = create_album_list(test_val_loader)
+    #test_album_list = create_album_list(test_val_loader)
     print('done\n')
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
@@ -137,9 +137,18 @@ def main():
             batch += 1
 
         batch = 0
-        for album_batch, price_batch, images_paths  in test_album_list:
+        j = 0
+        for album_batch, price_batch in test_val_loader:
             album_batch = album_batch.cuda()
-            pred = model(album_batch, images_paths, epoch_num)
+            ## get list of ids ##
+            id_list = []
+            batch_size = album_batch.shape[0]
+            for i in range(0, batch_size):
+                print(j + i)
+                id_list.append(test_val_loader.dataset.samples[j + i][0])
+            j += batch_size
+            ## ## ## ## ## ## ##
+            pred = model(album_batch, id_list, epoch_num)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float).cuda()
 
