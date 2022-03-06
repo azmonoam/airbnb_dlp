@@ -27,7 +27,7 @@ parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
 #parser.add_argument('--path_output', type=str, default='./outputs')
 parser.add_argument('--use_transformer', type=int, default=1)
 parser.add_argument('--album_clip_length', type=int, default=5)
-parser.add_argument('--batch_size', type=int, default=5)
+parser.add_argument('--batch_size', type=int, default=20)
 parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
@@ -43,10 +43,9 @@ parser.add_argument('--output_path', type=str, default='/Users/leeatgen/airbnb_d
 
 
 
-
-def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, args):
-    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, now_ts))
-    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, now_ts))
+def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
+    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, args.start_ts))
+    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, args.start_ts))
     train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
     test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
     plt.figure()
@@ -62,12 +61,15 @@ def create_album_list(train_val_loader):
     listings = []
     for a, p in train_val_loader:
         all_album_list.append([a, p])
-    num_apt = len(all_album_list[0][0])
-    for j in range(0, len(train_val_loader.dataset.samples), num_apt):
+    batch_size = len(all_album_list[0][0])
+    batch_num = 0
+    for j in range(0, len(train_val_loader.dataset.samples), batch_size):
         id_list = []
-        for i in range(0, num_apt):
+        real_batch_size = len(all_album_list[batch_num][0])
+        for i in range(0, real_batch_size):
             id_list.append(train_val_loader.dataset.samples[j+i][0])
         listings.append(id_list)
+        batch_num += 1
     for i in range(len(all_album_list)):
         all_album_list[i].append(listings[i])
     return all_album_list
@@ -142,11 +144,18 @@ def main():
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
             test_loss_data = pd.concat([test_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
                                         ignore_index=True, axis=0)
+            if i == epochs:
+                for j in range(0, pred.shape[0]):
+                    ind = j * args.album_clip_length
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['test'], 'id':
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
+                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                                          axis=0)
             batch += 1
 
         if i % args.save_rate == 0:
-            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, now_ts, i))
-            save_epochs_loss_results(now_ts, i, train_loss_data, test_loss_data, args)
+            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
+            save_epochs_loss_results(i, train_loss_data, test_loss_data, args)
 
     print('Done\n')
 
