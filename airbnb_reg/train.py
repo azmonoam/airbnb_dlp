@@ -24,7 +24,7 @@ parser.add_argument('--transform_type', type=str, default='squish')
 parser.add_argument('--album_sample', type=str, default='rand_permute')
 parser.add_argument('--dataset_path', type=str, default='/home/labs/testing/class63/airbnb')
 parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
-parser.add_argument('--path_output', type=str, default='./outputs')
+parser.add_argument('--path_output', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/outputs/')
 parser.add_argument('--use_transformer', type=int, default=1)
 parser.add_argument('--album_clip_length', type=int, default=5)
 parser.add_argument('--batch_size', type=int, default=150)
@@ -38,13 +38,14 @@ parser.add_argument('--epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.0001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
-parser.add_argument('--save_embeddings', type=bool, default=True)
+parser.add_argument('--save_embeddings', type=bool, default=False)
+parser.add_argument('--save_files', type=bool, default=False)
+parser.add_argument('--start_ts', type=str, default=datetime.datetime.now().strftime('%d-%m-%y_%H-%M'))
 
 
-
-def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, args):
-    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, now_ts))
-    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, now_ts))
+def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
+    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, args.start_ts))
+    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, args.start_ts))
     train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
     test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
     plt.figure()
@@ -52,7 +53,7 @@ def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, arg
     plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
     plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
     plt.legend(['train', 'test'])
-    plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(epoch)))
+    plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, args.start_ts, str(epoch)))
 
 
 def create_album_list(train_val_loader):
@@ -100,7 +101,6 @@ def main():
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     pred_data = pd.DataFrame(columns=['type', 'id', 'price', 'pred'])
-    now_ts = datetime.datetime.now().strftime('%d-%m-%y_%H-%M')
 
     for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
@@ -155,8 +155,8 @@ def main():
             batch += 1
 
         if i % args.save_rate == 0:
-            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, now_ts, i))
-            save_epochs_loss_results(now_ts, i, train_loss_data, test_loss_data, args)
+            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
+            save_epochs_loss_results(i, train_loss_data, test_loss_data, args)
 
     print('Done\n')
 

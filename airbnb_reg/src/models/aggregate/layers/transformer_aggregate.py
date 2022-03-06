@@ -1,11 +1,9 @@
 import os
 from torch import nn
 import torch
-# from fastai2.layers import trunc_normal_
 from src.utils.utils import trunc_normal_
 import pickle
 
-OUTPUT_PATH = '/home/labs/testing/class63/airbnb_dlp/airbnb_reg/outputs/'
 
 class TransformerEncoderLayerWithWeight(nn.TransformerEncoderLayer):
   def __init__(self, *args, **kwargs):
@@ -102,11 +100,12 @@ class TAggregate(nn.Module):
         for fn in range(b * self.clip_length, (b + 1) * self.clip_length):
           files.append(os.path.splitext(os.path.basename(filenames[fn]))[0])
         if self.args.save_attention:
-          torch.save(attn_weight[b], os.path.join(OUTPUT_PATH, album_name + '_attn.pt'))
-          torch.save(files, os.path.join(OUTPUT_PATH, album_name + '_order.pt'))
+          torch.save(attn_weight[b], os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_attn.pt'))
+          torch.save(files, os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_order.pt'))
         if self.args.save_embeddings:
-          torch.save(pre_aggregate[b], os.path.join(OUTPUT_PATH, album_name + '_embeddings4img.pt'))
-        with open(os.path.join(OUTPUT_PATH, album_name + '_files.pickle'), 'wb') as handle:
-          pickle.dump(files, handle)
+          torch.save(pre_aggregate[b], os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_embeddings4img.pt'))
+        if self.args.save_files:
+          with open(os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_files.pickle'), 'wb') as handle:
+            pickle.dump(files, handle)
 
     return o[:, 0], attn_weight
