@@ -24,10 +24,10 @@ parser.add_argument('--transform_type', type=str, default='squish')
 parser.add_argument('--album_sample', type=str, default='rand_permute')
 parser.add_argument('--dataset_path', type=str, default='/Users/leeatgen/PycharmProjects/airbnb_ex')
 parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
-parser.add_argument('--path_output', type=str, default='./outputs')
+#parser.add_argument('--path_output', type=str, default='./outputs')
 parser.add_argument('--use_transformer', type=int, default=1)
 parser.add_argument('--album_clip_length', type=int, default=5)
-parser.add_argument('--batch_size', type=int, default=150)
+parser.add_argument('--batch_size', type=int, default=5)
 parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
@@ -39,6 +39,8 @@ parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
 parser.add_argument('--save_embeddings', type=bool, default=False)
+parser.add_argument('--output_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/')
+
 
 
 
@@ -60,8 +62,12 @@ def create_album_list(train_val_loader):
     listings = []
     for a, p in train_val_loader:
         all_album_list.append([a, p])
-    for c in train_val_loader.dataset.samples:
-        listings.append(c[0][c[0].find('A') + 1:c[0].find('_')])
+    num_apt = len(all_album_list[0][0])
+    for j in range(0, len(train_val_loader.dataset.samples), num_apt):
+        id_list = []
+        for i in range(0, num_apt):
+            id_list.append(train_val_loader.dataset.samples[i][0])
+        listings.append(id_list)
     for i in range(len(all_album_list)):
         all_album_list[i].append(listings[i])
     return all_album_list
@@ -101,10 +107,10 @@ def main():
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
-        for album_batch, price_batch, id in all_album_list:
+        for album_batch, price_batch, images_paths in all_album_list:
             album_batch.requires_grad_()
             album_batch = album_batch#.cuda()
-            pred = model(album_batch)
+            pred = model(album_batch, images_paths)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float)#.cuda()
             loss = criterion(pred, price_batch)

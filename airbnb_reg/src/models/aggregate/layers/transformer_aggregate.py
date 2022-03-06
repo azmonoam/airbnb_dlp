@@ -5,7 +5,7 @@ import torch
 from src.utils.utils import trunc_normal_
 import pickle
 
-OUTPUT_PATH = '/home/labs/testing/class63/airbnb_dlp/airbnb_reg/outputs/'
+
 
 class TransformerEncoderLayerWithWeight(nn.TransformerEncoderLayer):
   def __init__(self, *args, **kwargs):
@@ -63,6 +63,7 @@ class TAggregate(nn.Module):
     self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
     self.pos_embed = nn.Parameter(torch.zeros(1, clip_length + 1, embed_dim))
     self.pos_drop = nn.Dropout(p=drop_rate)
+    self.output_path = args.output_path
 
     with torch.no_grad():
       trunc_normal_(self.pos_embed, std=.02)
@@ -94,6 +95,7 @@ class TAggregate(nn.Module):
     o.transpose_(1, 0)
     # save attn_weight as a pickle file
     if filenames:
+      OUTPUT_PATH = self.output_path
       for b in range(nvids):
         # get album name:
         album_name = filenames[b * self.clip_length].split('/')[-2]
