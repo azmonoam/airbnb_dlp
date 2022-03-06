@@ -61,15 +61,14 @@ def create_album_list(train_val_loader):
     listings = []
     for a, p in train_val_loader:
         all_album_list.append([a, p])
-    batch_size = len(all_album_list[0][0])
-    batch_num = 0
-    for j in range(0, len(train_val_loader.dataset.samples), batch_size):
+    num_apt = len(all_album_list[0][0])
+    batch = 0
+    for j in range(0, len(train_val_loader.dataset.samples), num_apt):
         id_list = []
-        real_batch_size = len(all_album_list[batch_num][0])
-        for i in range(0, real_batch_size):
+        for i in range(0, len(all_album_list[batch][0])):
             id_list.append(train_val_loader.dataset.samples[j+i][0])
         listings.append(id_list)
-        batch_num += 1
+        batch += 1
     for i in range(len(all_album_list)):
         all_album_list[i].append(listings[i])
     return all_album_list
@@ -156,7 +155,7 @@ def main():
         if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
             save_epochs_loss_results(i, train_loss_data, test_loss_data, args)
-
+    pred_data.to_csv('{}/losses/predictions_{}.csv'.format(args.results_path, args.start_ts))
     print('Done\n')
 
 if __name__ == '__main__':
