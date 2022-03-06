@@ -111,10 +111,10 @@ def main():
         batch = 0
 
         for album_batch, price_batch, images_paths in all_album_list:
-            epoch_batch = str(i) +"_"+ str(batch)
+            epoch_num = int(i)
             album_batch.requires_grad_()
             album_batch = album_batch#.cuda()
-            pred = model(album_batch, images_paths, epoch_batch)
+            pred = model(album_batch, images_paths, epoch_num)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float)#.cuda()
             loss = criterion(pred, price_batch)
@@ -131,9 +131,18 @@ def main():
             batch += 1
 
         batch = 0
+        j = 0
         for album_batch, price_batch in test_val_loader:
             album_batch = album_batch#.cuda()
-            pred = model(album_batch)
+            ## get list of ids ##
+            id_list = []
+            batch_size = album_batch.shape[0]
+            for i in range(0, batch_size):
+                print(j + i)
+                id_list.append(test_val_loader.dataset.samples[j + i][0])
+            j += batch_size
+            ## ## ## ## ## ## ##
+            pred = model(album_batch, id_list, epoch_num)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float)#.cuda()
 

@@ -80,7 +80,7 @@ class TAggregate(nn.Module):
       nn.init.constant_(m.bias, 0)
       nn.init.constant_(m.weight, 1.0)
 
-  def forward(self, x, filenames=None, epoch_batch=None):
+  def forward(self, x, filenames=None, epoch=None):
     nvids = x.shape[0] // self.clip_length
     x = x.view((nvids, self.clip_length, -1))
     pre_aggregate = torch.clone(x)
@@ -90,7 +90,6 @@ class TAggregate(nn.Module):
       x = x + self.pos_embed
     # x = self.pos_drop(x)
 
-    epoch, batch = epoch_batch.split("_")
     x.transpose_(1, 0)
     o, attn_weight = self.transformer_enc(x)
     o.transpose_(1, 0)
@@ -105,10 +104,10 @@ class TAggregate(nn.Module):
         for fn in range(b * self.clip_length, (b + 1) * self.clip_length):
           files.append(os.path.splitext(os.path.basename(filenames[fn]))[0])
         if self.args.save_attention:
-          torch.save(attn_weight[b], os.path.join(OUTPUT_PATH, str(self.args.start_ts)+'_'+epoch_batch+'_'+album_name+ '_attn.pt'))
-          torch.save(files, os.path.join(OUTPUT_PATH, album_name + '_'+epoch_batch+'_order.pt'))
+          torch.save(attn_weight[b], os.path.join(OUTPUT_PATH, str(self.args.start_ts)+'_'+album_name + '_attn.pt'))
+          torch.save(files, os.path.join(OUTPUT_PATH, album_name + '_order.pt'))
         if self.args.save_embeddings:
-          torch.save(pre_aggregate[b], os.path.join(OUTPUT_PATH, str(self.args.start_ts)+'_'+epoch_batch+'_'+album_name+'_embeddings4img.pt'))
+          torch.save(pre_aggregate[b], os.path.join(OUTPUT_PATH, str(self.args.start_ts)+'_'+album_name+'_embeddings4img.pt'))
         with open(os.path.join(OUTPUT_PATH, album_name + '_files.pickle'), 'wb') as handle:
           pickle.dump(files, handle)
 
