@@ -35,7 +35,7 @@ parser.add_argument('--remove_model_jit', type=int, default=None)
 parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/results')
 parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/train_ids.txt')
 parser.add_argument('--epochs', type=int, default=1000)
-parser.add_argument('--lr', type=float, default=0.001)
+parser.add_argument('--lr', type=float, default=0.0001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
 parser.add_argument('--save_embeddings', type=bool, default=True)
@@ -99,9 +99,10 @@ def main():
 
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
-    now_ts = datetime.datetime.now().strftime('%d-%m-%y_%H:%M')
+    pred_data = pd.DataFrame(columns=['type', 'id', 'price', 'pred'])
+    now_ts = datetime.datetime.now().strftime('%d-%m-%y_%H-%M')
 
-    for i in range(epochs):
+    for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
@@ -122,6 +123,13 @@ def main():
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, train_loss))
             train_loss_data = pd.concat([train_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [train_loss]})],
                                         ignore_index=True, axis=0)
+            if i == epochs:
+                for j in range(0, pred.shape[0]):
+                    ind = j * args.album_clip_length
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['train'], 'id':
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
+                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                                          axis=0)
             batch += 1
 
         batch = 0
@@ -134,9 +142,16 @@ def main():
             test_loss = criterion(pred, price_batch)
             test_loss = test_loss.to(torch.float).cuda()
             test_loss = test_loss.item()
-            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
+            print('test: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
             test_loss_data = pd.concat([test_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
                                         ignore_index=True, axis=0)
+            if i == epochs:
+                for j in range(0, pred.shape[0]):
+                    ind = j * args.album_clip_length
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['test'], 'id':
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
+                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                                          axis=0)
             batch += 1
 
         if i % args.save_rate == 0:
