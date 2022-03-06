@@ -130,8 +130,8 @@ def main():
                 for j in range(0, pred.shape[0]):
                     ind = j * args.album_clip_length
                     pred_data = pd.concat([pred_data, pd.DataFrame({'type': 'train', 'id':
-                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
-                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach().cpu(),
+                                                                    'pred': pred[j].detach().cpu()})], ignore_index=True,
                                           axis=0)
             batch += 1
 
@@ -152,8 +152,8 @@ def main():
                 for j in range(0, pred.shape[0]):
                     ind = j * args.album_clip_length
                     pred_data = pd.concat([pred_data, pd.DataFrame({'type': 'test', 'id':
-                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
-                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach().cuda(),
+                                                                    'pred': pred[j].detach().cuda()})], ignore_index=True,
                                           axis=0)
             batch += 1
 
