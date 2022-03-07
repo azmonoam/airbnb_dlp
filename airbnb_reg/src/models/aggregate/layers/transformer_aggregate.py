@@ -1,9 +1,9 @@
 import os
 from torch import nn
 import torch
-# from fastai2.layers import trunc_normal_
 from src.utils.utils import trunc_normal_
 import pickle
+
 
 class TransformerEncoderLayerWithWeight(nn.TransformerEncoderLayer):
   def __init__(self, *args, **kwargs):
@@ -77,7 +77,7 @@ class TAggregate(nn.Module):
       nn.init.constant_(m.bias, 0)
       nn.init.constant_(m.weight, 1.0)
 
-  def forward(self, x, filenames=None):
+  def forward(self, x, filenames=None, epoch_batch=None):
     nvids = x.shape[0] // self.clip_length
     x = x.view((nvids, self.clip_length, -1))
     pre_aggregate = torch.clone(x)
@@ -87,11 +87,12 @@ class TAggregate(nn.Module):
       x = x + self.pos_embed
     # x = self.pos_drop(x)
 
+    epoch, batch = epoch_batch.split("_")
     x.transpose_(1, 0)
     o, attn_weight = self.transformer_enc(x)
     o.transpose_(1, 0)
     # save attn_weight as a pickle file
-    if filenames:
+    if filenames and (int(epoch) % self.args.epochs == 0):
       for b in range(nvids):
         # get album name:
         album_name = filenames[b * self.clip_length].split('/')[-2]
@@ -100,11 +101,12 @@ class TAggregate(nn.Module):
         for fn in range(b * self.clip_length, (b + 1) * self.clip_length):
           files.append(os.path.splitext(os.path.basename(filenames[fn]))[0])
         if self.args.save_attention:
-          torch.save(attn_weight[b], os.path.join('outputs', album_name + '_attn.pt'))
-          torch.save(files, os.path.join('outputs', album_name + '_order.pt'))
+          torch.save(attn_weight[b], os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_attn.pt'))
+          torch.save(files, os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_order.pt'))
         if self.args.save_embeddings:
-          torch.save(pre_aggregate[b], os.path.join('outputs', album_name + '_embeddings4img.pt'))
-        with open(os.path.join('outputs', album_name + '_files.pickle'), 'wb') as handle:
-          pickle.dump(files, handle)
+          torch.save(pre_aggregate[b], os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_embeddings4img.pt'))
+        if self.args.save_files:
+          with open(os.path.join(self.args.path_output, self.args.start_ts + '_' + album_name + '_files.pickle'), 'wb') as handle:
+            pickle.dump(files, handle)
 
     return o[:, 0], attn_weight

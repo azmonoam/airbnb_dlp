@@ -38,13 +38,14 @@ parser.add_argument('--epochs', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
-parser.add_argument('--save_embeddings', type=bool, default=True)
+parser.add_argument('--save_embeddings', type=bool, default=False)
+parser.add_argument('--save_files', type=bool, default=False)
+parser.add_argument('--start_ts', type=str, default=datetime.datetime.now().strftime('%d-%m-%y_%H-%M'))
 
 
-
-def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, args):
-    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, now_ts))
-    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, now_ts))
+def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
+    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, args.start_ts))
+    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, args.start_ts))
     train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
     test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
     plt.figure()
@@ -52,7 +53,7 @@ def save_epochs_loss_results(now_ts, epoch, train_loss_data, test_loss_data, arg
     plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
     plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
     plt.legend(['train', 'test'])
-    plt.savefig('{}/losses/looses_{}_ep_{}.jpg'.format(args.results_path, now_ts, str(epoch)))
+    plt.savefig('{}/losses/losses_{}_ep_{}.jpg'.format(args.results_path, args.start_ts, str(epoch)))
 
 
 def create_album_list(train_val_loader):
@@ -64,7 +65,7 @@ def create_album_list(train_val_loader):
     for j in range(0, len(train_val_loader.dataset.samples), num_apt):
         id_list = []
         for i in range(0, num_apt):
-            id_list.append(train_val_loader.dataset.samples[i][0])
+            id_list.append(train_val_loader.dataset.samples[j+i][0])
         listings.append(id_list)
     for i in range(len(all_album_list)):
         all_album_list[i].append(listings[i])
@@ -99,16 +100,17 @@ def main():
 
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
-    now_ts = datetime.datetime.now().strftime('%d-%m-%y_%H:%M')
+    pred_data = pd.DataFrame(columns=['type', 'id', 'price', 'pred'])
 
-    for i in range(epochs):
+    for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
         for album_batch, price_batch, images_paths in all_album_list:
+            epoch_batch = str(i) +"_"+ str(batch)
             album_batch.requires_grad_()
             album_batch = album_batch#.cuda()
-            pred = model(album_batch, images_paths)
+            pred = model(album_batch, images_paths, epoch_batch)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float)#.cuda()
             loss = criterion(pred, price_batch)
@@ -122,6 +124,13 @@ def main():
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, train_loss))
             train_loss_data = pd.concat([train_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [train_loss]})],
                                         ignore_index=True, axis=0)
+            if i == epochs:
+                for j in range(0, pred.shape[0]):
+                    ind = j * args.album_clip_length
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['train'], 'id':
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
+                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                                          axis=0)
             batch += 1
 
         batch = 0
@@ -134,17 +143,23 @@ def main():
             test_loss = criterion(pred, price_batch)
             test_loss = test_loss.to(torch.float)#.cuda()
             test_loss = test_loss.item()
-            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
+            print('test: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
             test_loss_data = pd.concat([test_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
                                         ignore_index=True, axis=0)
+            if i == epochs:
+                for j in range(0, pred.shape[0]):
+                    ind = j * args.album_clip_length
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['test'], 'id':
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
+                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                                          axis=0)
             batch += 1
 
         if i % args.save_rate == 0:
-            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, now_ts, i))
-            save_epochs_loss_results(now_ts, i, train_loss_data, test_loss_data, args)
+            torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
+            save_epochs_loss_results(i, train_loss_data, test_loss_data, args)
 
     print('Done\n')
-
 
 if __name__ == '__main__':
     main()

@@ -9,7 +9,6 @@ from src.models import create_model
 from src.utils.utils import create_dataloader, validate
 import pandas as pd
 
-
 # ----------------------------------------------------------------------
 # Parameters
 parser = argparse.ArgumentParser(description='airbnb_reg: Photo album Event recognition using Transformers Attention.')
@@ -140,5 +139,6 @@ def main(ids):
 
 
 if __name__ == '__main__':
-    ids = pd.read_csv('/Users/talsokolov/Desktop/airbnb_dlp/airbnb_reg/all_ids.csv')['id'].values
-    main(ids)
+   ids = pd.read_csv('/Users/talsokolov/Desktop/airbnb_dlp/airbnb_reg/all_ids.csv')['id'].values
+   ids = [41174759]
+   main(ids)
