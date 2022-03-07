@@ -9,13 +9,12 @@ import numpy as np
 from src.models import create_model
 from src.utils.utils import create_dataloader, validate
 
-
 # ----------------------------------------------------------------------
 # Parameters
 parser = argparse.ArgumentParser(description='airbnb_reg: Photo album Event recognition using Transformers Attention.')
 parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
 parser.add_argument('--album_path', type=str, default='./albums/Graduation/0_92024390@N00')
-parser.add_argument('--val_dir', type=str, default='./albums') #  /Graduation') # /0_92024390@N00')
+parser.add_argument('--val_dir', type=str, default='./albums')  # /Graduation') # /0_92024390@N00')
 parser.add_argument('--num_classes', type=int, default=23)
 parser.add_argument('--model_name', type=str, default='mtresnetaggregate')
 parser.add_argument('--transformers_pos', type=int, default=1)
@@ -32,9 +31,11 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
+parser.add_argument('--job_id', type=str, default='06-03-22_23-32')
+parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/results')
 
 
-#def get_album(args):
+# def get_album(args):
 
 #    files = os.listdir(args.album_path)
 #    n_files = len(files)
@@ -46,25 +47,25 @@ parser.add_argument('--remove_model_jit', type=int, default=None)
 #        np_img = np.array(im_resize, dtype=np.uint8)
 #        tensor_batch[i] = torch.from_numpy(np_img).float() / 255.0
 #    tensor_batch = tensor_batch.permute(0, 3, 1, 2)#.cuda()   # HWC to CHW
-    # tensor_images = torch.unsqueeze(tensor_images, 0).cuda()
+# tensor_images = torch.unsqueeze(tensor_images, 0).cuda()
 #    montage = torchvision.utils.make_grid(tensor_batch).permute(1, 2, 0).cpu()
 #    return tensor_batch, montage
 
 
-#def inference(tensor_batch, model, classes_list, args):
+# def inference(tensor_batch, model, classes_list, args):
 
 #    output = torch.squeeze(torch.sigmoid(model(tensor_batch)))
 #    np_output = output.cpu().detach().numpy()
 #    idx_sort = np.argsort(-np_output)
-    # Top-k
+# Top-k
 #    detected_classes = np.array(classes_list)[idx_sort][: args.top_k]
 #    scores = np_output[idx_sort][: args.top_k]
-    # Threshold
+# Threshold
 #    idx_th = scores > args.threshold
 #    return detected_classes[idx_th], scores[idx_th]
 
 
-#def display_image(im, tags, filename, path_dest):
+# def display_image(im, tags, filename, path_dest):
 
 #    if not os.path.exists(path_dest):
 #        os.makedirs(path_dest)
@@ -80,31 +81,51 @@ parser.add_argument('--remove_model_jit', type=int, default=None)
 
 
 def main(ids):
-
     args = parser.parse_args()
 
-    prefix = args.path_output
+    prefix = '/Users/leeatgen/Desktop/outputs' + '/' + args.job_id  # args.path_output +'/'+ args.job_id
 
-    meaningful_images = pd.DataFrame(columns = ['ids', 'meaningful_im','is_first'])
+    meaningful_images = pd.DataFrame(columns=['ids', 'meaningful_im', 'is_first'])
 
-    for id in ids:
-        album_path = '{}{}_attn.pt'.format(prefix, id)
-        order_path = '{}{}_order.pt'.format(prefix, id)
-        album_attention = torch.load(album_path)
-        album_order = torch.load(order_path)
-        arg_max = int(torch.argmax(album_attention[0, 1:]))
-        meaningful_image = album_order[arg_max]
-        is_first = (meaningful_image[-1] == '0')
-        meaningful_images = pd.concat([meaningful_images, pd.DataFrame({"ids":[id], 'meaningful_im':[meaningful_image], "is_first":[is_first]})])
+    ids_list = []
+    for l in ids.readlines():
+        ids_list.append(l.strip().split("\n")[0])
 
+    files_not_found = 0
+
+    for id in ids_list:
+        try:
+            album_path = '{}_{}_attn.pt'.format(prefix, id)
+            order_path = '{}_{}_order.pt'.format(prefix, id)
+            album_attention = torch.load(album_path, map_location=torch.device('cpu'))
+            album_order = torch.load(order_path, map_location=torch.device('cpu'))
+            arg_max = int(torch.argmax(album_attention[0, 1:]))
+            meaningful_image = album_order[arg_max]
+            is_first = (meaningful_image[-2:-1] == 'I0')
+            meaningful_images = pd.concat([meaningful_images, pd.DataFrame(
+                {"ids": [id], 'meaningful_im': [meaningful_image], "is_first": [is_first]})])
+        except:
+            print(f"att matrix for apt {id} not found")
+            files_not_found += 1
 
     guessed_baseline = meaningful_images.is_first.sum()
-    guessed_baseline = guessed_baseline/len(ids)
+    guessed_baseline = guessed_baseline / len(ids_list)
+
+
+    predictions_path = '/Users/leeatgen/Desktop/results/losses/predictions_' + args.job_id +".csv"
+                                                                                                 # args.results_path + "/predictions_" + args.job_id
+    predictions = pd.read_csv(predictions_path)
+    pred = predictions['pred']
+    gt = predictions['price']
+    pred.plot( kind='hist')
+    plt.show()
+    gt.plot(kind='hist')
+    plt.show()
 
     return meaningful_images, guessed_baseline
     print('Done\n')
 
 
 if __name__ == '__main__':
-    ids = pd.read_csv('/Users/talsokolov/Desktop/airbnb_dlp/airbnb_reg/all_ids.csv')['id'].values
-    main(ids)
+    ids = open('/Users/leeatgen/airbnb_dlp/airbnb_reg/train_ids.txt')
+    meaningful_images, guessed_baseline = main(ids)
