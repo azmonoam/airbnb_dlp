@@ -34,7 +34,7 @@ parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
 parser.add_argument('--results_path', type=str, default='/Users/noamazmon/airbnb_dlp/airbnb_reg/results')
 parser.add_argument('--train_ids_path', type=str, default='/Users/noamazmon/airbnb_dlp/airbnb_reg/train_ids.txt')
-parser.add_argument('--epochs', type=int, default=3)
+parser.add_argument('--epochs', type=int, default=2)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
@@ -103,15 +103,18 @@ def main():
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     pred_data = pd.DataFrame(columns=['type', 'id', 'price', 'pred'])
+    att_data = pd.DataFrame(columns=['id', 'att_mat', 'pic_order', 'most_important_pic_path', 'most_important_pic'])
+    att_data.to_csv('{}att_data_{}.csv'.format(args.path_output, args.start_ts) ,index=False)
 
     for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
         for album_batch, price_batch, images_paths in all_album_list:
+            epoch_num = int(i)
             album_batch.requires_grad_()
             album_batch = album_batch#.cuda()
-            pred = model(album_batch, images_paths)
+            pred = model(album_batch, images_paths, epoch_num)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float)#.cuda()
             loss = criterion(pred, price_batch)
@@ -128,16 +131,24 @@ def main():
             if i == epochs:
                 for j in range(0, pred.shape[0]):
                     ind = j * args.album_clip_length
-                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['train'], 'id':
-                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
-                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': 'train', 'id':
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach().cpu(),
+                                                                    'pred': pred[j].detach().cpu()})], ignore_index=True,
                                           axis=0)
             batch += 1
 
         batch = 0
+        t = 0
         for album_batch, price_batch in test_val_loader:
             album_batch = album_batch#.cuda()
-            pred = model(album_batch, images_paths)
+            ## get list of ids ##
+            id_list = []
+            batch_size = album_batch.shape[0]
+            for k in range(0, batch_size):
+                id_list.append(test_val_loader.dataset.samples[t + k][0])
+            t += batch_size
+            ## ## ## ## ## ## ##
+            pred = model(album_batch, id_list, epoch_num)
             pred = pred.to(torch.float)
             price_batch = price_batch.to(torch.float)#.cuda()
 
@@ -150,9 +161,9 @@ def main():
             if i == epochs:
                 for j in range(0, pred.shape[0]):
                     ind = j * args.album_clip_length
-                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['test'], 'id':
-                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
-                                                                    'pred': pred[j].detach()})], ignore_index=True,
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': 'test', 'id':
+                        [id_list[ind][id_list[ind].find('A') + 1: id_list[ind].find('_')]], 'price': price_batch[j].detach().cpu(),
+                                                                    'pred': pred[j].detach().cpu()})], ignore_index=True,
                                           axis=0)
             batch += 1
 
