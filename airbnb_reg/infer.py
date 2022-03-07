@@ -120,7 +120,6 @@ parser.add_argument('--remove_model_jit', type=int, default=None)
 
 def count_I0(att_data_path, args):
 
-    att_data_path = f"/att_data_{args.job_id}.csv"
     att_data = pd.read_csv(att_data_path)
 
     sig_im = att_data['most_important_pic_path']
@@ -152,10 +151,10 @@ def get_pred_dist(args):
 def main():
     args = parser.parse_args()
 
-    att_data_path = f"/att_data_{args.job_id}.csv"
+    att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
     att_data, guessed_baseline = count_I0(att_data_path, args=args)
 
-    get_pred_dist()
+    get_pred_dist(args)
 
     print('Done\n')
 
