@@ -161,7 +161,7 @@ def main():
                 for j in range(0, pred.shape[0]):
                     ind = j * args.album_clip_length
                     pred_data = pd.concat([pred_data, pd.DataFrame({'type': 'test', 'id':
-                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach().cpu(),
+                        [id_list[ind][id_list[ind].find('A') + 1: id_list[ind].find('_')]], 'price': price_batch[j].detach().cpu(),
                                                                     'pred': pred[j].detach().cpu()})], ignore_index=True,
                                           axis=0)
             batch += 1
