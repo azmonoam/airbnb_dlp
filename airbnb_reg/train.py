@@ -24,7 +24,7 @@ parser.add_argument('--transform_type', type=str, default='squish')
 parser.add_argument('--album_sample', type=str, default='rand_permute')
 parser.add_argument('--dataset_path', type=str, default='/Users/leeatgen/PycharmProjects/airbnb_ex')
 parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
-#parser.add_argument('--path_output', type=str, default='./outputs')
+parser.add_argument('--path_output', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/')
 parser.add_argument('--use_transformer', type=int, default=1)
 parser.add_argument('--album_clip_length', type=int, default=5)
 parser.add_argument('--batch_size', type=int, default=20)
@@ -39,8 +39,8 @@ parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
 parser.add_argument('--save_embeddings', type=bool, default=False)
-parser.add_argument('--output_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/')
-
+parser.add_argument('--save_files', type=bool, default=False)
+parser.add_argument('--start_ts', type=str, default=datetime.datetime.now().strftime('%d-%m-%y_%H-%M'))
 
 
 def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
@@ -102,8 +102,9 @@ def main():
 
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
-    now_ts = datetime.datetime.now().strftime('%d-%m-%y_%H:%M')
-    args.start_ts = now_ts
+    pred_data = pd.DataFrame(columns=['type', 'id', 'price', 'pred'])
+    att_data = pd.DataFrame(columns=['id', 'att_mat', 'pic_order', 'most_important_pic_path', 'most_important_pic'])
+    att_data.to_csv('{}att_data_{}.csv'.format(args.path_output, args.start_ts) ,index=False)
 
     for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
@@ -128,19 +129,25 @@ def main():
             print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, train_loss))
             train_loss_data = pd.concat([train_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [train_loss]})],
                                         ignore_index=True, axis=0)
+            if i == epochs:
+                for j in range(0, pred.shape[0]):
+                    ind = j * args.album_clip_length
+                    pred_data = pd.concat([pred_data, pd.DataFrame({'type': 'train', 'id':
+                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach().cpu(),
+                                                                    'pred': pred[j].detach().cpu()})], ignore_index=True,
+                                          axis=0)
             batch += 1
 
         batch = 0
-        j = 0
+        t = 0
         for album_batch, price_batch in test_val_loader:
             album_batch = album_batch#.cuda()
             ## get list of ids ##
             id_list = []
             batch_size = album_batch.shape[0]
-            for i in range(0, batch_size):
-                print(j + i)
-                id_list.append(test_val_loader.dataset.samples[j + i][0])
-            j += batch_size
+            for k in range(0, batch_size):
+                id_list.append(test_val_loader.dataset.samples[t + k][0])
+            t += batch_size
             ## ## ## ## ## ## ##
             pred = model(album_batch, id_list, epoch_num)
             pred = pred.to(torch.float)
@@ -156,7 +163,7 @@ def main():
                 for j in range(0, pred.shape[0]):
                     ind = j * args.album_clip_length
                     pred_data = pd.concat([pred_data, pd.DataFrame({'type': ['test'], 'id':
-                        [images_paths[ind][images_paths[ind].find('A') + 1: images_paths[ind].find('_')]], 'price': price_batch[j].detach(),
+                        [id_list[ind][id_list[ind].find('A') + 1: id_list[ind].find('_')]], 'price': price_batch[j].detach(),
                                                                     'pred': pred[j].detach()})], ignore_index=True,
                                           axis=0)
             batch += 1

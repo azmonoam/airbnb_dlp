@@ -4,8 +4,8 @@ import torch
 # from fastai2.layers import trunc_normal_
 from src.utils.utils import trunc_normal_
 import pickle
-
-
+import numpy as np
+import pandas as pd
 
 class TransformerEncoderLayerWithWeight(nn.TransformerEncoderLayer):
   def __init__(self, *args, **kwargs):
@@ -80,7 +80,7 @@ class TAggregate(nn.Module):
       nn.init.constant_(m.bias, 0)
       nn.init.constant_(m.weight, 1.0)
 
-  def forward(self, x, filenames=None, epoch=None):
+  def forward(self, x, filenames=None, epoch_num=None):
     nvids = x.shape[0] // self.clip_length
     x = x.view((nvids, self.clip_length, -1))
     pre_aggregate = torch.clone(x)
@@ -94,21 +94,21 @@ class TAggregate(nn.Module):
     o, attn_weight = self.transformer_enc(x)
     o.transpose_(1, 0)
     # save attn_weight as a pickle file
-    if filenames and (int(epoch) % self.args.epochs == 0):
-      OUTPUT_PATH = self.args.output_path
+    if filenames and (epoch_num == self.args.epochs):
+      att_data = pd.read_csv('{}att_data_{}.csv'.format(self.args.path_output, self.args.start_ts))
       for b in range(nvids):
         # get album name:
-        album_name = filenames[b * self.clip_length].split('/')[-2]
-        # get file names:
-        files = []
+        apt_pic_pathes = []
         for fn in range(b * self.clip_length, (b + 1) * self.clip_length):
-          files.append(os.path.splitext(os.path.basename(filenames[fn]))[0])
-        if self.args.save_attention:
-          torch.save(attn_weight[b], os.path.join(OUTPUT_PATH, str(self.args.start_ts)+'_'+album_name + '_attn.pt'))
-          torch.save(files, os.path.join(OUTPUT_PATH, album_name + '_order.pt'))
-        if self.args.save_embeddings:
-          torch.save(pre_aggregate[b], os.path.join(OUTPUT_PATH, str(self.args.start_ts)+'_'+album_name+'_embeddings4img.pt'))
-        with open(os.path.join(OUTPUT_PATH, album_name + '_files.pickle'), 'wb') as handle:
-          pickle.dump(files, handle)
-
+          apt_pic_pathes.append(filenames[fn])
+        apt_id = filenames[b * self.clip_length].split('/')[-2]
+        att_mat = attn_weight[b].cpu().detach().numpy().tolist()
+        arg_max = int(torch.argmax(attn_weight[b][0, 1:]))
+        meaningful_image_path = apt_pic_pathes[arg_max]
+        meaningful_image = os.path.splitext(os.path.basename(meaningful_image_path))[0]
+        meaningful_image = int(meaningful_image[meaningful_image.find('_I') + 2:])
+        att_data = pd.concat([att_data, pd.DataFrame({'id': apt_id, 'att_mat': [att_mat] , 'pic_order': [apt_pic_pathes],
+                            'most_important_pic_path':meaningful_image_path, 'most_important_pic':meaningful_image})],
+                             ignore_index=True,        axis=0)
+      att_data.to_csv('{}att_data_{}.csv'.format(self.args.path_output, self.args.start_ts),index=False)
     return o[:, 0], attn_weight
