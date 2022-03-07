@@ -97,7 +97,7 @@ class TAggregate(nn.Module):
         # get album name:
         apt_pic_pathes = []
         for fn in range(b * self.clip_length, (b + 1) * self.clip_length):
-          apt_pic_pathes.append(os.path.splitext(os.path.basename(filenames[fn]))[0])
+          apt_pic_pathes.append(filenames[fn])
         apt_id = filenames[b * self.clip_length].split('/')[-2]
         att_mat = attn_weight[b].cpu().detach().numpy().tolist()
         arg_max = int(torch.argmax(attn_weight[b][0, 1:]))
