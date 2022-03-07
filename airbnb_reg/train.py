@@ -137,15 +137,15 @@ def main():
             batch += 1
 
         batch = 0
-        j = 0
+        t = 0
         for album_batch, price_batch in test_val_loader:
             album_batch = album_batch.cuda()
             ## get list of ids ##
             id_list = []
             batch_size = album_batch.shape[0]
-            for i in range(0, batch_size):
-                id_list.append(test_val_loader.dataset.samples[j + i][0])
-            j += batch_size
+            for k in range(0, batch_size):
+                id_list.append(test_val_loader.dataset.samples[t + k][0])
+            t += batch_size
             ## ## ## ## ## ## ##
             pred = model(album_batch, id_list, epoch_num)
             pred = pred.to(torch.float)
