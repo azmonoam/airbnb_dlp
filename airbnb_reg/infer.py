@@ -31,7 +31,7 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
-parser.add_argument('--job_id', type=str, default='06-03-22_23-32')
+parser.add_argument('--job_id', type=str, default='07-03-22_16-31')
 parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/results')
 
 
@@ -80,12 +80,11 @@ parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_
 #    plt.savefig(os.path.join(path_dest, filename))
 
 
-def main(ids):
+def main():
     args = parser.parse_args()
 
     att_data_path = f"/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/att_data_{args.job_id}.csv"  # args.path_output +'/'+ args.job_id
     att_data = pd.read_csv(att_data_path)
-    meaningful_images = pd.DataFrame(columns=['ids', 'meaningful_im', 'is_first'])
 
     sig_im = att_data['most_important_pic_path']
     sig_im_lists = sig_im.str.split("/")
@@ -96,13 +95,11 @@ def main(ids):
 
     is_I0 = (att_data['most_important_pic'] == "I0")
     att_data['is_I0'] = is_I0
-
     guessed_baseline = att_data.is_I0.sum()
     guessed_baseline = guessed_baseline / len(is_I0)
 
-
-    predictions_path = '/Users/leeatgen/Desktop/results/losses/predictions_' + args.job_id +".csv"
-                                                                                                 # args.results_path + "/predictions_" + args.job_id
+    predictions_path = args.results_path + "/losses/predictions_" + args.job_id +".csv"
+                                                                                                 #
     predictions = pd.read_csv(predictions_path)
     pred = predictions['pred']
     gt = predictions['price']
@@ -111,10 +108,9 @@ def main(ids):
     gt.plot(kind='hist')
     plt.show()
 
-    return meaningful_images, guessed_baseline
+    return att_data, guessed_baseline
     print('Done\n')
 
 
 if __name__ == '__main__':
-    ids = open('/Users/leeatgen/airbnb_dlp/airbnb_reg/train_ids.txt')
-    meaningful_images, guessed_baseline = main(ids)
+    main()
