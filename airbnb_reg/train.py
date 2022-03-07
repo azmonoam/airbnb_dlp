@@ -104,6 +104,8 @@ def main():
     train_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     pred_data = pd.DataFrame(columns=['type', 'id', 'price', 'pred'])
+    att_data = pd.DataFrame(columns=['id', 'att_mat', 'pic_order', 'most_important_pic_path', 'most_important_pic'])
+    att_data.to_csv('{}att_data_{}.csv'.format(args.path_output, args.start_ts) ,index=False)
 
     for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
