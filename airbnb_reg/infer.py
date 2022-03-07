@@ -83,33 +83,22 @@ parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_
 def main(ids):
     args = parser.parse_args()
 
-    prefix = '/Users/leeatgen/Desktop/outputs' + '/' + args.job_id  # args.path_output +'/'+ args.job_id
-
+    att_data_path = f"/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/att_data_{args.job_id}.csv"  # args.path_output +'/'+ args.job_id
+    att_data = pd.read_csv(att_data_path)
     meaningful_images = pd.DataFrame(columns=['ids', 'meaningful_im', 'is_first'])
 
-    ids_list = []
-    for l in ids.readlines():
-        ids_list.append(l.strip().split("\n")[0])
+    sig_im = att_data['most_important_pic_path']
+    sig_im_lists = sig_im.str.split("/")
+    most_important_pic = []
+    for l in sig_im_lists:
+        most_important_pic.append(l[-1].split(".")[0][-2:])
+    att_data['most_important_pic'] = most_important_pic
 
-    files_not_found = 0
+    is_I0 = (att_data['most_important_pic'] == "I0")
+    att_data['is_I0'] = is_I0
 
-    for id in ids_list:
-        try:
-            album_path = '{}_{}_attn.pt'.format(prefix, id)
-            order_path = '{}_{}_order.pt'.format(prefix, id)
-            album_attention = torch.load(album_path, map_location=torch.device('cpu'))
-            album_order = torch.load(order_path, map_location=torch.device('cpu'))
-            arg_max = int(torch.argmax(album_attention[0, 1:]))
-            meaningful_image = album_order[arg_max]
-            is_first = (meaningful_image[-2:-1] == 'I0')
-            meaningful_images = pd.concat([meaningful_images, pd.DataFrame(
-                {"ids": [id], 'meaningful_im': [meaningful_image], "is_first": [is_first]})])
-        except:
-            print(f"att matrix for apt {id} not found")
-            files_not_found += 1
-
-    guessed_baseline = meaningful_images.is_first.sum()
-    guessed_baseline = guessed_baseline / len(ids_list)
+    guessed_baseline = att_data.is_I0.sum()
+    guessed_baseline = guessed_baseline / len(is_I0)
 
 
     predictions_path = '/Users/leeatgen/Desktop/results/losses/predictions_' + args.job_id +".csv"
