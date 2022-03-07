@@ -23,7 +23,7 @@ parser.add_argument('--transform_type', type=str, default='squish')
 parser.add_argument('--album_sample', type=str, default='rand_permute')
 parser.add_argument('--dataset_path', type=str, default='./data/ML_CUFED')
 parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
-parser.add_argument('--path_output', type=str, default='./outputs')
+parser.add_argument('--path_output', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs')
 parser.add_argument('--use_transformer', type=int, default=1)
 parser.add_argument('--album_clip_length', type=int, default=32)
 parser.add_argument('--batch_size', type=int, default=128)
@@ -80,10 +80,8 @@ parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_
 #    plt.savefig(os.path.join(path_dest, filename))
 
 
-def main():
-    args = parser.parse_args()
+def count_I0(att_data_path, args):
 
-    att_data_path = f"/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/att_data_{args.job_id}.csv"  # args.path_output +'/'+ args.job_id
     att_data = pd.read_csv(att_data_path)
 
     sig_im = att_data['most_important_pic_path']
@@ -98,17 +96,28 @@ def main():
     guessed_baseline = att_data.is_I0.sum()
     guessed_baseline = guessed_baseline / len(is_I0)
 
-    predictions_path = args.results_path + "/losses/predictions_" + args.job_id +".csv"
-                                                                                                 #
+    return att_data, guessed_baseline
+
+def get_pred_dist(args):
+
+    predictions_path = args.results_path + f"/losses/predictions_{args.job_id}.csv"
     predictions = pd.read_csv(predictions_path)
     pred = predictions['pred']
     gt = predictions['price']
-    pred.plot( kind='hist')
+    pred.plot(kind='hist')
     plt.show()
     gt.plot(kind='hist')
     plt.show()
 
-    return att_data, guessed_baseline
+
+def main():
+    args = parser.parse_args()
+
+    att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
+    att_data, guessed_baseline = count_I0(att_data_path, args=args)
+
+    get_pred_dist(args)
+
     print('Done\n')
 
 
