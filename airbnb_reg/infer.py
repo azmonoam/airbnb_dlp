@@ -128,9 +128,9 @@ def count_I0(att_data_path, args):
     for l in sig_im_lists:
         most_important_pic.append(l[-1].split(".")[0][-2:])
     att_data['most_important_pic'] = most_important_pic
-
     is_I0 = (att_data['most_important_pic'] == "I0")
     att_data['is_I0'] = is_I0
+
     guessed_baseline = att_data.is_I0.sum()
     guessed_baseline = guessed_baseline / len(is_I0)
 
