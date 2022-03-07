@@ -92,16 +92,19 @@ class TAggregate(nn.Module):
     o.transpose_(1, 0)
     # save attn_weight as a pickle file
     if filenames and (epoch_num == self.args.epochs):
-      csv_att_data = pd.read_csv('{}att_data_{}.csv'.format(self.args.path_output, self.args.start_ts))
+      att_data = pd.read_csv('{}att_data_{}.csv'.format(self.args.path_output, self.args.start_ts))
       for b in range(nvids):
         # get album name:
+        apt_pic_pathes = []
+        for fn in range(b * self.clip_length, (b + 1) * self.clip_length):
+          apt_pic_pathes.append(os.path.splitext(os.path.basename(filenames[fn]))[0])
         apt_id = filenames[b * self.clip_length].split('/')[-2]
         att_mat = attn_weight[b].cpu().detach().numpy().tolist()
         arg_max = int(torch.argmax(attn_weight[b][0, 1:]))
-        meaningful_image_path = filenames[arg_max]
+        meaningful_image_path = apt_pic_pathes[arg_max]
         meaningful_image = os.path.splitext(os.path.basename(meaningful_image_path))[0]
         meaningful_image = int(meaningful_image[meaningful_image.find('_I') + 2:])
-        att_data = pd.concat([csv_att_data, pd.DataFrame({'id': apt_id, 'att_mat': [att_mat] , 'pic_order': [filenames],
+        att_data = pd.concat([att_data, pd.DataFrame({'id': apt_id, 'att_mat': [att_mat] , 'pic_order': [apt_pic_pathes],
                             'most_important_pic_path':meaningful_image_path, 'most_important_pic':meaningful_image})],
                              ignore_index=True,        axis=0)
       att_data.to_csv('{}att_data_{}.csv'.format(self.args.path_output, self.args.start_ts),index=False)
