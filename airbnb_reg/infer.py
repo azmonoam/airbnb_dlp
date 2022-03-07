@@ -153,6 +153,7 @@ def main():
 
     att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
     att_data, guessed_baseline = count_I0(att_data_path, args=args)
+    print(f"predicted the first image {guessed_baseline} time")
 
     get_pred_dist(args)
 
