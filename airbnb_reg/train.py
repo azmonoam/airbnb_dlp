@@ -40,12 +40,12 @@ parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
 parser.add_argument('--save_embeddings', type=bool, default=False)
 parser.add_argument('--save_files', type=bool, default=False)
-parser.add_argument('--start_ts', type=str, default=datetime.datetime.now().strftime('%d-%m-%y_%H-%M'))
+parser.add_argument('--start_ts', type=str, default=datetime.datetime.now().strftime('%d-%m-%y_%H-%M-%S'))
 
 
 def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
-    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, args.start_ts))
-    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, args.start_ts))
+    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, args.start_ts), index=False)
+    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, args.start_ts), index=False)
     train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
     test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
     plt.figure()
@@ -105,7 +105,7 @@ def main():
     test_loss_data = pd.DataFrame(columns=['epoch', 'batch', 'loss'])
     pred_data = pd.DataFrame(columns=['type', 'id', 'price', 'pred'])
     att_data = pd.DataFrame(columns=['id', 'att_mat', 'pic_order', 'most_important_pic_path', 'most_important_pic'])
-    att_data.to_csv('{}att_data_{}.csv'.format(args.path_output, args.start_ts) ,index=False)
+    att_data.to_csv('{}att_data_{}.csv'.format(args.path_output, args.start_ts), index=False)
 
     for i in range(1, epochs+1):
         random.seed(datetime.datetime.now().timestamp())
@@ -171,7 +171,7 @@ def main():
         if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
             save_epochs_loss_results(i, train_loss_data, test_loss_data, args)
-    pred_data.to_csv('{}/losses/predictions_{}.csv'.format(args.results_path, args.start_ts))
+    pred_data.to_csv('{}/losses/predictions_{}.csv'.format(args.results_path, args.start_ts), index=False)
     print('Done\n')
 
 if __name__ == '__main__':
