@@ -49,11 +49,12 @@ class TransformerEncoderWithWeight(nn.TransformerEncoder):
 
 
 class TAggregate(nn.Module):
-  def __init__(self, clip_length=None, embed_dim=2048, n_layers=2, args=None):
+  def __init__(self, clip_length=None, embed_dim=2048, args=None):
     super(TAggregate, self).__init__()
     self.clip_length = clip_length
     drop_rate = 0.
     self.args = args
+    n_layers = args.n_layers
     enc_layer = TransformerEncoderLayerWithWeight(d_model=embed_dim, nhead=8)
     self.transformer_enc = TransformerEncoderWithWeight(enc_layer, num_layers=n_layers,
                                                         norm=nn.LayerNorm(

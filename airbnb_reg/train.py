@@ -41,6 +41,7 @@ parser.add_argument('--save_attention', type=bool, default=True)
 parser.add_argument('--save_embeddings', type=bool, default=False)
 parser.add_argument('--save_files', type=bool, default=False)
 parser.add_argument('--start_ts', type=str, default=datetime.datetime.now().strftime('%d-%m-%y_%H-%M-%S'))
+parser.add_argument('--n_layers', type=int, default=1)
 
 
 def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
