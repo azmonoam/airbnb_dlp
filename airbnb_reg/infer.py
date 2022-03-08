@@ -118,27 +118,47 @@ parser.add_argument('--remove_model_jit', type=int, default=None)
 #     print('Done\n')
 
 
-def main(ids):
+def count_I0(att_data_path, args):
 
+    att_data = pd.read_csv(att_data_path)
+
+    sig_im = att_data['most_important_pic_path']
+    sig_im_lists = sig_im.str.split("/")
+    most_important_pic = []
+    for l in sig_im_lists:
+        most_important_pic.append(l[-1].split(".")[0][-2:])
+    att_data['most_important_pic'] = most_important_pic
+    is_I0 = (att_data['most_important_pic'] == "I0")
+    att_data['is_I0'] = is_I0
+
+    guessed_baseline = att_data.is_I0.sum()
+    guessed_baseline = guessed_baseline / len(is_I0)
+
+    return att_data, guessed_baseline
+
+def get_pred_dist(args):
+
+    predictions_path = args.results_path + f"/losses/predictions_{args.job_id}.csv"
+    predictions = pd.read_csv(predictions_path)
+    pred = predictions['pred']
+    gt = predictions['price']
+    pred.plot(kind='hist')
+    plt.show()
+    gt.plot(kind='hist')
+    plt.show()
+
+
+def main():
     args = parser.parse_args()
 
-    prefix = args.path_output
+    att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
+    att_data, guessed_baseline = count_I0(att_data_path, args=args)
+    print(f"predicted the first image {guessed_baseline} time")
 
-    meaningful_images = []
+    get_pred_dist(args)
 
-    for id in ids:
-        album_path = '{}{}_attn.pt'.format(prefix, id)
-        order_path = '{}{}_order.pt'.format(prefix, id)
-        album_attention = torch.load(album_path)
-        album_order = torch.load(order_path)
-        arg_max = int(torch.argmax(album_attention[0, :]))
-        meaningful_image = album_order[arg_max]
-        meaningful_images.append(meaningful_image)
-
-    return(meaningful_images)
     print('Done\n')
 
 
 if __name__ == '__main__':
-    ids = pd.read_csv('/home/labs/testing/class63/airbnb_dlp/airbnb_reg/all_ids.csv')['id'].values
-    main(ids)
+    main()
