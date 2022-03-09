@@ -32,7 +32,7 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
-
+parser.add_argument('--job_id', type=str, default='08-03-22_11-33-20')
 #
 # def get_album(args):
 #
