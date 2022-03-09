@@ -35,7 +35,7 @@ parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
 parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/results')
 parser.add_argument('--train_ids_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/train_ids.txt')
-parser.add_argument('--epochs', type=int, default=1)
+parser.add_argument('--epochs', type=int, default=10)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--save_rate', type=int, default=10)
 parser.add_argument('--save_attention', type=bool, default=True)
@@ -109,6 +109,7 @@ def main():
     att_data.to_csv('{}att_data_{}.csv'.format(args.path_output, args.start_ts) ,index=False)
 
     for i in range(1, epochs+1):
+        print(f"current lr{scheduler.get_last_lr()}")
         random.seed(datetime.datetime.now().timestamp())
         random.shuffle(all_album_list)
         batch = 0
@@ -171,7 +172,6 @@ def main():
             batch += 1
 
         scheduler.step()
-        print(f"current lr{scheduler.get_last_lr()}")
 
         if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
