@@ -2,9 +2,8 @@ import os
 from torch import nn
 import torch
 from src.utils.utils import trunc_normal_
-import pickle
-import numpy as np
 import pandas as pd
+
 
 class TransformerEncoderLayerWithWeight(nn.TransformerEncoderLayer):
   def __init__(self, *args, **kwargs):
@@ -87,11 +86,10 @@ class TAggregate(nn.Module):
     x = torch.cat((cls_tokens, x), dim=1)
     if self.args.transformers_pos:
       x = x + self.pos_embed
-    # x = self.pos_drop(x)
     x.transpose_(1, 0)
     o, attn_weight = self.transformer_enc(x)
     o.transpose_(1, 0)
-    # save attn_weight as a pickle file
+    # save attn_weight
     if filenames and (epoch_num == self.args.epochs):
       att_data = pd.read_csv('{}att_data_{}.csv'.format(self.args.path_output, self.args.start_ts))
       for b in range(nvids):
