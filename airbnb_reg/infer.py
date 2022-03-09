@@ -1,122 +1,19 @@
-import torch
 import argparse
-import os
 import matplotlib.pyplot as plt
-import torchvision.utils
-from PIL import Image
-import numpy as np
-from src.models import create_model
-from src.utils.utils import create_dataloader, validate
 import pandas as pd
-
+import get_apt_city
+import numpy as np
 
 # ----------------------------------------------------------------------
 # Parameters
 parser = argparse.ArgumentParser(description='airbnb_reg: Photo album Event recognition using Transformers Attention.')
-parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
-parser.add_argument('--album_path', type=str, default='./albums/Graduation/0_92024390@N00')
-parser.add_argument('--val_dir', type=str, default='./albums') #  /Graduation') # /0_92024390@N00')
-parser.add_argument('--num_classes', type=int, default=23)
-parser.add_argument('--model_name', type=str, default='mtresnetaggregate')
-parser.add_argument('--transformers_pos', type=int, default=1)
-parser.add_argument('--input_size', type=int, default=224)
-parser.add_argument('--transform_type', type=str, default='squish')
-parser.add_argument('--album_sample', type=str, default='rand_permute')
-parser.add_argument('--dataset_path', type=str, default='./data/ML_CUFED')
-parser.add_argument('--dataset_type', type=str, default='ML_CUFED')
-parser.add_argument('--path_output', type=str, default='./outputs')
-parser.add_argument('--use_transformer', type=int, default=1)
-parser.add_argument('--album_clip_length', type=int, default=32)
-parser.add_argument('--batch_size', type=int, default=128)
-parser.add_argument('--num_workers', type=int, default=0)
-parser.add_argument('--top_k', type=int, default=3)
-parser.add_argument('--threshold', type=float, default=0.85)
-parser.add_argument('--remove_model_jit', type=int, default=None)
-parser.add_argument('--job_id', type=str, default='07-03-22_15-11')
-parser.add_argument('--results_path', type=str, default='./results')
-# def get_album(args):
-#
-#     files = os.listdir(args.album_path)
-#     n_files = len(files)
-#     idx_fetch = np.linspace(0, n_files-1, args.album_clip_length, dtype=int)
-#     tensor_batch = torch.zeros(len(idx_fetch), args.input_size, args.input_size, 3)
-#     for i, id in enumerate(idx_fetch):
-#         im = Image.open(os.path.join(args.album_path, files[id]))
-#         im_resize = im.resize((args.input_size, args.input_size))
-#         np_img = np.array(im_resize, dtype=np.uint8)
-#         tensor_batch[i] = torch.from_numpy(np_img).float() / 255.0
-#     tensor_batch = tensor_batch.permute(0, 3, 1, 2).cuda()   # HWC to CHW
-#     # tensor_images = torch.unsqueeze(tensor_images, 0).cuda()
-#     montage = torchvision.utils.make_grid(tensor_batch).permute(1, 2, 0).cpu()
-#     return tensor_batch, montage
-#
-#
-# def inference(tensor_batch, model, classes_list, args):
-#
-#     output = torch.squeeze(torch.sigmoid(model(tensor_batch)))
-#     np_output = output.cpu().detach().numpy()
-#     idx_sort = np.argsort(-np_output)
-#     # Top-k
-#     detected_classes = np.array(classes_list)[idx_sort][: args.top_k]
-#     scores = np_output[idx_sort][: args.top_k]
-#     # Threshold
-#     idx_th = scores > args.threshold
-#     return detected_classes[idx_th], scores[idx_th]
-#
-#
-# def display_image(im, tags, filename, path_dest):
-#
-#     if not os.path.exists(path_dest):
-#         os.makedirs(path_dest)
-#
-#     plt.figure()
-#     plt.imshow(im)
-#     plt.axis('off')
-#     plt.axis('tight')
-#     plt.rcParams["axes.titlesize"] = 16
-#     plt.title("Predicted classes: {}".format(tags))
-#     print(os.path.join(path_dest, filename))
-#     plt.savefig(os.path.join(path_dest, filename))
-#
-#
-# def main_old():
-#     print('airbnb_reg demo of inference code on a single album.')
-#
-#     # ----------------------------------------------------------------------
-#     # Preliminaries
-#     args = parser.parse_args()
-#
-#     # Setup model
-#     print('creating and loading the model...')
-#     state = torch.load(args.model_path, map_location='cpu')
-#     # args.num_classes = state['num_classes']
-#     model = create_model(args).cuda()
-#     model.load_state_dict(state['model'], strict=True)
-#     model.eval()
-#     classes_list = np.array(list(state['idx_to_class'].values()))
-#     print('Class list:', classes_list)
-#
-#     # Setup data loader
-#     print('creating data loader...')
-#     val_loader = create_dataloader(args)
-#     print('done\n')
-#
-#     # Get album
-#     tensor_batch, montage = get_album(args)
-#
-#     # Inference
-#     tags, confs = inference(tensor_batch, model, classes_list, args)
-#
-#     # Visualization
-#     display_image(montage, tags, 'result.jpg', os.path.join(args.path_output, args.album_path).replace("./albums", ""))
-#
-#     # Actual validation process
-#     # print('loading album and doing inference...')
-#     # map = validate(model, val_loader, classes_list, args.threshold)
-#     # print("final validation map: {:.2f}".format(map))
-#
-#     print('Done\n')
-
+parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/results')
+parser.add_argument('--path_output', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/outputs/')
+parser.add_argument('--job_id', type=str, default='08-03-22_11-33-20')
+parser.add_argument('--base_path', type=str, default='/Users/noamazmon/airbnb_dlp/')
+parser.add_argument('--pred_path', type=str, default='airbnb_reg/results/losses/predictions_07-03-22_15-11.csv')
+parser.add_argument('--att_path', type=str, default='airbnb_reg/outputs/att_data_08-03-22_11-33-20.csv')
+parser.add_argument('--id_city_path', type=str, default='airbnb_reg/id_and_city.csv')
 
 def count_I0(att_data_path, args):
 
@@ -148,12 +45,70 @@ def get_pred_dist(args):
     plt.show()
 
 
-def main():
-    args = parser.parse_args()
+def get_loss_per_city(args):
+    pred_full_path = args.base_path + args.pred_path
+    city_id_full_path = args.base_path + args.id_city_path
+    pred_with_city_df = get_apt_city.add_city_per_id(city_id_full_path, pred_full_path)
+    pred_with_city_df['loss'] = (pred_with_city_df['price'] - pred_with_city_df['pred'])**2
+    avg_loss_per_city = pred_with_city_df.groupby(['city'], as_index=False).median()
+    return avg_loss_per_city
 
+
+def from_loss_to_usd(loss, perc_75, perc_25):
+    return ((loss ** 0.5) * ( perc_75 - perc_25)) + perc_25
+
+
+def add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city):
+    avg_loss_per_city = pd.concat([avg_loss_per_city, pd.DataFrame(
+        columns=['loss_in_usd', 'mean_baseline_loss', 'mean_baseline_in_usd', 'median_baseline_loss',
+                 'median_baseline_in_usd'])], axis=1)
+    for city in city_conv_data.keys():
+        city_25_prec =  city_conv_data[city]['0.25']
+        city_75_prec =  city_conv_data[city]['0.75']
+        avg_loss_per_city['loss_in_usd'][avg_loss_per_city['city']==city] = from_loss_to_usd(avg_loss_per_city['loss'], city_75_prec, city_25_prec)
+        avg_loss_per_city['mean_baseline_loss'][avg_loss_per_city['city']==city] = city_conv_data[city]['mean_baseline_loss']
+        avg_loss_per_city['mean_baseline_in_usd'][avg_loss_per_city['city']==city] =  from_loss_to_usd(avg_loss_per_city['mean_baseline_loss'], city_75_prec, city_25_prec)
+        avg_loss_per_city['median_baseline_loss'][avg_loss_per_city['city']==city] = city_conv_data[city]['median_baseline_loss']
+        avg_loss_per_city['median_baseline_in_usd'][avg_loss_per_city['city']==city] = from_loss_to_usd(avg_loss_per_city['median_baseline_loss'], city_75_prec, city_25_prec)
+    return avg_loss_per_city
+
+
+def plot_loss_per_city_and_base_line(args,avg_loss_per_city):
+    width = 0.35
+    labels_short = avg_loss_per_city['city']
+    labels = []
+    citys = {'ber': 'Berlin', 'nyc': 'New York', 'ist': 'Istanbul','tor':'Toronto', 'gre':'Athens'}
+    for city in labels_short:
+        labels.append(citys[city])
+    x = np.arange(avg_loss_per_city.shape[0])
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width / 2, avg_loss_per_city['loss_in_usd'], width, label='loss')
+    rects2 = ax.bar(x + width / 2, avg_loss_per_city['median_baseline_in_usd'], width, label='baseline')
+    ax.set_ylabel('USD $')
+    ax.set_title('Loss in USD per city')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+    def autolabel(rects):
+        for rect in rects:
+            height = rect.get_height()
+            height = round(height,1)
+            ax.annotate('{}'.format(height),
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 3),  fontsize= 8,
+                        textcoords="offset points",
+                        ha='center', va='bottom')
+    autolabel(rects1)
+    autolabel(rects2)
+    fig.tight_layout()
+    plt.savefig('{}{}_loss_per_city.jpg'.format(args.base_path ,args.pred_path), dpi=300)
+    plt.show()
+
+
+def main(args):
     att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
     att_data, guessed_baseline = count_I0(att_data_path, args=args)
-    print(f"predicted the first image {guessed_baseline}")
+    print(f"predicted the first image {guessed_baseline} time")
 
     get_pred_dist(args)
 
@@ -161,4 +116,16 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = parser.parse_args()
+    city_conv_data = {'nyc': {'0.25': 126.431266846361, '0.75': 248.517520215633, 'mean_baseline_loss': 1.5701, 'median_baseline_loss':1.4448 },
+                      'ist': {'0.25': 33.9339622641509, '0.75': 100.161725067385,  'mean_baseline_loss': 0.5891, 'median_baseline_loss': 0.5499 },
+                      'ber': {'0.25': 79.9245283018868, '0.75': 156.0,  'mean_baseline_loss':0.9418, 'median_baseline_loss':0.8731 },
+                      'tor': {'0.25': 55.3793800539084, '0.75': 143.995956873315,  'mean_baseline_loss': 0.9461, 'median_baseline_loss':0.8662},
+                      'gre': {'0.25': 44.2681940700809, '0.75': 89.0,  'mean_baseline_loss': 1.4517, 'median_baseline_loss':1.3287}}
+
+
+    avg_loss_per_city = get_loss_per_city(args)
+    avg_loss_per_city = add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city)
+    plot_loss_per_city_and_base_line(args, avg_loss_per_city)
+
+    main(args)
