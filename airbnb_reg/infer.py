@@ -55,7 +55,7 @@ def get_loss_per_city(args):
 
 
 def from_loss_to_usd(loss, perc_75, perc_25):
-    return ((loss ** 0.5) * ( perc_75 - perc_25)) + perc_25
+    return ((loss ** 0.5) * ( perc_75 - perc_25))
 
 
 def add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city):
@@ -71,6 +71,17 @@ def add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city):
         avg_loss_per_city['median_baseline_loss'][avg_loss_per_city['city']==city] = city_conv_data[city]['median_baseline_loss']
         avg_loss_per_city['median_baseline_in_usd'][avg_loss_per_city['city']==city] = from_loss_to_usd(avg_loss_per_city['median_baseline_loss'], city_75_prec, city_25_prec)
     return avg_loss_per_city
+
+
+def autolabel(ax, rects):
+    for rect in rects:
+        height = rect.get_height()
+        height = round(height,1)
+        ax.annotate('{}'.format(height),
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 3),  fontsize= 8,
+                        textcoords="offset points",
+                        ha='center', va='bottom')
 
 
 def plot_loss_per_city_and_base_line(args,avg_loss_per_city):
@@ -89,19 +100,44 @@ def plot_loss_per_city_and_base_line(args,avg_loss_per_city):
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.legend()
-    def autolabel(rects):
-        for rect in rects:
-            height = rect.get_height()
-            height = round(height,1)
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 3),  fontsize= 8,
-                        textcoords="offset points",
-                        ha='center', va='bottom')
-    autolabel(rects1)
-    autolabel(rects2)
+    autolabel(ax, rects1)
+    autolabel(ax, rects2)
     fig.tight_layout()
     plt.savefig('{}{}_loss_per_city.jpg'.format(args.base_path ,args.pred_path), dpi=300)
+    plt.show()
+
+
+def add_room_type_to_att_data(args):
+    att_df = pd.read_csv(args.base_path + args.att_path)
+    room_type_df = pd.read_csv(args.base_path + 'room_type.csv', usecols=['Image_path', 'room_type'])
+    att_df_with_most_important_room = att_df.join(room_type_df.set_index('Image_path').rename(columns={"room_type": "I_importat_room_type"}), on='most_important_pic_path')
+    att_df_with_most_important_room['room_0_path'] = att_df_with_most_important_room.apply(
+        lambda row: row['most_important_pic_path'][:row['most_important_pic_path'].find('I')] + 'I0.jpeg', axis=1)
+    att_df_rooms = att_df_with_most_important_room.join(room_type_df.set_index('Image_path').rename(columns={"room_type": "I0_room_type"}), on='room_0_path')
+    return att_df_rooms
+
+
+def plot_room_type_for_important_photo_vs_baseline(att_df_rooms):
+    I0_data = att_df_rooms.groupby(['I0_room_type'], as_index=False).count()[['I0_room_type', 'id']]
+    I0_data = I0_data.iloc[I0_data.I0_room_type.str.lower().argsort()]
+    labels = I0_data['I0_room_type'].str.lower().tolist()
+    labels = [ x.replace('_', ' ') for x in labels]
+    I_importat_data = att_df_rooms.groupby(['I_importat_room_type'], as_index=False).count()[['I_importat_room_type', 'id']]
+    I_importat_data = I_importat_data.iloc[I_importat_data.I_importat_room_type.str.lower().argsort()]
+    width = 0.35
+    x = np.arange(I_importat_data.shape[0])
+    fig, ax = plt.subplots(figsize=(8, 6))
+    rects1 = ax.bar(x - width / 2, I_importat_data['id'], width, label='prediction')
+    rects2 = ax.bar(x + width / 2, I0_data['id'], width, label='baseline')
+    ax.set_ylabel('number of apartments')
+    ax.set_title('most important room distribution')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+    autolabel(ax, rects1)
+    autolabel(ax, rects2)
+    fig.tight_layout()
+    plt.savefig('{}{}_most_imp_room_dist.jpg'.format(args.base_path, args.att_path), dpi=300)
     plt.show()
 
 
