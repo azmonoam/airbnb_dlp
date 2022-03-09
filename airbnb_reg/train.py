@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+from torch.optim import lr_scheduler
 import random
 
 from src.models import create_model
@@ -99,6 +100,7 @@ def main():
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
     criterion = torch.nn.MSELoss(reduction='mean')
+    scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
     epochs = args.epochs
     print('start learning')
 
@@ -168,6 +170,8 @@ def main():
                                                                     'pred': pred[j].detach().cpu()})], ignore_index=True,
                                           axis=0)
             batch += 1
+
+        scheduler.step()
 
         if i % args.save_rate == 0 or i == epochs:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
