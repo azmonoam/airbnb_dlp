@@ -32,8 +32,8 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--top_k', type=int, default=3)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
-parser.add_argument('--job_id', type=str, default='08-03-22_11-33-20')
-#
+parser.add_argument('--job_id', type=str, default='07-03-22_15-11')
+parser.add_argument('--results_path', type=str, default='./results')
 # def get_album(args):
 #
 #     files = os.listdir(args.album_path)
@@ -144,7 +144,7 @@ def get_pred_dist(args):
     gt = predictions['price']
     pred.plot(kind='hist')
     plt.show()
-    gt.plot(kind='hist')
+    gt.loc[gt<=2].plot(kind='hist')
     plt.show()
 
 
@@ -153,7 +153,7 @@ def main():
 
     att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
     att_data, guessed_baseline = count_I0(att_data_path, args=args)
-    print(f"predicted the first image {guessed_baseline} time")
+    print(f"predicted the first image {guessed_baseline}")
 
     get_pred_dist(args)
 
