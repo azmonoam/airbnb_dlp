@@ -7,12 +7,12 @@ import numpy as np
 # ----------------------------------------------------------------------
 # Parameters
 parser = argparse.ArgumentParser(description='airbnb_reg: Photo album Event recognition using Transformers Attention.')
-parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/results')
-parser.add_argument('--path_output', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/outputs/')
-parser.add_argument('--job_id', type=str, default='08-03-22_11-33-20')
-parser.add_argument('--base_path', type=str, default='/Users/noamazmon/airbnb_dlp/')
-parser.add_argument('--pred_path', type=str, default='airbnb_reg/results/losses/predictions_07-03-22_15-11.csv')
-parser.add_argument('--att_path', type=str, default='airbnb_reg/outputs/att_data_08-03-22_11-33-20.csv')
+parser.add_argument('--results_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/results')
+parser.add_argument('--path_output', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/')
+parser.add_argument('--job_id', type=str, default='07-03-22_13-33')
+parser.add_argument('--base_path', type=str, default='/Users/leeatgen/airbnb_dlp/')
+parser.add_argument('--pred_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/results/losses/predictions_07-03-22_15-11.csv')
+parser.add_argument('--att_path', type=str, default='/Users/leeatgen/airbnb_dlp/airbnb_reg/outputs/att_data_08-03-22_11-33-20.csv')
 parser.add_argument('--id_city_path', type=str, default='airbnb_reg/id_and_city.csv')
 
 def count_I0(att_data_path, args):
@@ -55,7 +55,7 @@ def get_loss_per_city(args):
 
 
 def from_loss_to_usd(loss, perc_75, perc_25):
-    return ((loss ** 0.5) * ( perc_75 - perc_25)) + perc_25
+    return ((loss ** 0.5) * ( perc_75 - perc_25))
 
 
 def add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city):
@@ -104,17 +104,32 @@ def plot_loss_per_city_and_base_line(args,avg_loss_per_city):
     plt.savefig('{}{}_loss_per_city.jpg'.format(args.base_path ,args.pred_path), dpi=300)
     plt.show()
 
-#def plot_loss(losses):
+def plot_loss():
 
+    test_losses = pd.read_csv(args.results_path + f"/losses/test_losses_{args.job_id}.csv")
+    test_losses_loss = test_losses.apply(lambda row: from_loss_to_usd(row['loss'], 142, 51), axis=1)
+    test_losses['loss'] = test_losses_loss
+    test_medians = test_losses.groupby(['epoch'], as_index=False).median()['loss']
+
+    train_losses = pd.read_csv(args.results_path + f"/losses/train_losses_{args.job_id}.csv")
+    train_losses_loss = train_losses.apply(lambda row: from_loss_to_usd(row['loss'], 142, 51), axis=1)
+    train_losses['loss'] = train_losses_loss
+    train_medians = train_losses.groupby(['epoch'], as_index=False).median()['loss']
+
+    median_per_epoch = pd.DataFrame({'test': test_medians.values, 'train': train_medians.values, 'median_baseline':from_loss_to_usd(1.136,142,51), 'mean_baseline':from_loss_to_usd(1.0506,142,51)})
+    median_per_epoch['epoch'] = [i for i in range(1, len(test_medians) + 1)]
+
+    median_per_epoch.plot('epoch', ['test', 'train', 'median_baseline', 'mean_baseline'], ylabels='loss in USD')
+    plt.show()
 
 
 def main(args):
-    att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
-    att_data, guessed_baseline = count_I0(att_data_path, args=args)
-    print(f"predicted the first image {guessed_baseline} time")
+    #att_data_path = args.path_output + f"/att_data_{args.job_id}.csv"
+    #att_data, guessed_baseline = count_I0(att_data_path, args=args)
+    #print(f"predicted the first image {guessed_baseline} time")
 
-    get_pred_dist(args)
-
+    #get_pred_dist(args)
+    plot_loss()
     print('Done\n')
 
 
@@ -127,8 +142,8 @@ if __name__ == '__main__':
                       'gre': {'0.25': 44.2681940700809, '0.75': 89.0,  'mean_baseline_loss': 1.4517, 'median_baseline_loss':1.3287}}
 
 
-    avg_loss_per_city = get_loss_per_city(args)
-    avg_loss_per_city = add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city)
-    plot_loss_per_city_and_base_line(args, avg_loss_per_city)
+    #avg_loss_per_city = get_loss_per_city(args)
+    #avg_loss_per_city = add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city)
+    #plot_loss_per_city_and_base_line(args, avg_loss_per_city)
 
     main(args)
