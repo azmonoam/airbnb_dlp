@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+from torch.optim import lr_scheduler
 import random
 
 from src.models import create_model
@@ -97,6 +98,7 @@ def main():
 
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
     criterion = torch.nn.MSELoss(reduction='mean')
+    scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
     epochs = args.epochs
     print('start learning')
 
@@ -156,7 +158,7 @@ def main():
             test_loss = criterion(pred, price_batch)
             test_loss = test_loss.to(torch.float)#.cuda()
             test_loss = test_loss.item()
-            print('train: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
+            print('test: epoch: {},batch: {}, loss: {}'.format(i, batch, test_loss))
             test_loss_data = pd.concat([test_loss_data, pd.DataFrame({'epoch': [i], 'batch': [batch], 'loss': [test_loss]})],
                                         ignore_index=True, axis=0)
             if i == epochs:
@@ -168,9 +170,14 @@ def main():
                                           axis=0)
             batch += 1
 
+        scheduler.step()
+        print(f"current lr{scheduler.get_last_lr()}")
+
         if i % args.save_rate == 0:
             torch.save(model.state_dict(), '{}/wights/{}_model_ep_{}.pkl'.format(args.results_path, args.start_ts, i))
             save_epochs_loss_results(i, train_loss_data, test_loss_data, args)
+
+
     pred_data.to_csv('{}/losses/predictions_{}.csv'.format(args.results_path, args.start_ts))
     print('Done\n')
 
