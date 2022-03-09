@@ -45,16 +45,16 @@ parser.add_argument('--n_layers', type=int, default=1)
 
 
 def save_epochs_loss_results(epoch, train_loss_data, test_loss_data, args):
-    train_loss_data.to_csv('{}/losses/train_losses_{}.csv'.format(args.results_path, args.start_ts), index=False)
-    test_loss_data.to_csv('{}/losses/test_losses_{}.csv'.format(args.results_path, args.start_ts), index=False)
+    train_loss_data.to_csv('{}/losses/train_losses_{}_lr_{}_tb_{}.csv'.format(args.results_path, args.start_ts, args.lr, args.n_layers), index=False)
+    test_loss_data.to_csv('{}/losses/test_losses_{}_lr_{}_tb_{}.csv'.format(args.results_path, args.start_ts, args.lr, args.n_layers), index=False)
     train_loss_grouped_data = train_loss_data.groupby(['epoch'], as_index=False).median()
     test_loss_grouped_data = test_loss_data.groupby(['epoch'], as_index=False).median()
     plt.figure()
-    plt.title('loss as function of epochs - lr:{}'.format(args.lr))
+    plt.title('loss as function of epochs - lr:{}, tb:{}'.format(args.lr, args.n_layers))
     plt.plot(train_loss_grouped_data['epoch'], train_loss_grouped_data['loss'])
     plt.plot(test_loss_grouped_data['epoch'], test_loss_grouped_data['loss'])
     plt.legend(['train', 'test'])
-    plt.savefig('{}/losses/losses_{}_ep_{}.jpg'.format(args.results_path, args.start_ts, str(epoch)))
+    plt.savefig('{}/losses/losses_{}_lr_{}_tb_{}_ep_{}.jpg'.format(args.results_path, args.start_ts, args.lr, args.n_layers, str(epoch)))
 
 
 def create_album_list(train_val_loader):
