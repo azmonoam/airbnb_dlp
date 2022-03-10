@@ -9,7 +9,8 @@ import pandas as pd
 import numpy as np
 import tqdm
 
-parser = argparse.ArgumentParser(description='airbnb_reg: Photo album listings price prediction using Transformers Attention.')
+parser = argparse.ArgumentParser(
+    description='airbnb_reg: Photo album listings price prediction using Transformers Attention.')
 parser.add_argument('--model_path', type=str, default='./models_local/peta_32.pth')
 parser.add_argument('--album_path', type=str, default='/Users/leeatgen/class63@access3.wexac.weizmann.ac.il/airbnb')
 parser.add_argument('--val_dir', type=str, default='/Users/leeatgen/class63@access3.wexac.weizmann.ac.il/airbnb')
@@ -39,7 +40,6 @@ parser.add_argument('--save_embeddings', type=bool, default=False)
 parser.add_argument('--save_files', type=bool, default=False)
 
 
-
 def main():
     args = parser.parse_args()
     lr = LinearRegression()
@@ -52,7 +52,8 @@ def main():
     for input, target in train_val_loader:
         embedding = model(input)
         embedding_per_apt = embedding.tensor_split(int(input.shape[0] / 5))
-        train_x.extend([embedding_per_apt[i].squeeze().flatten().detach().tolist() for i in range(len(embedding_per_apt))])
+        train_x.extend(
+            [embedding_per_apt[i].squeeze().flatten().detach().tolist() for i in range(len(embedding_per_apt))])
         train_y.extend(target.squeeze().tolist())
 
     train_x = np.asarray(train_x)
@@ -60,17 +61,17 @@ def main():
     print("ready! fitting linear regression model ...")
     lr.fit(train_x, train_y)
 
-    test_x, test_y =[], []
+    test_x, test_y = [], []
     print("getting embeddings from ResNet152 on test set... ")
     for input, target in test_val_loader:
         embedding = model(input)
         embedding_per_apt = embedding.tensor_split(int(input.shape[0] / 5))
-        test_x.extend([embedding_per_apt[i].squeeze().flatten().detach().tolist() for i in range(len(embedding_per_apt))])
+        test_x.extend(
+            [embedding_per_apt[i].squeeze().flatten().detach().tolist() for i in range(len(embedding_per_apt))])
         try:
             test_y.extend(target.squeeze().tolist())
         except TypeError:
             test_y.extend([target.squeeze().tolist()])
-
 
     test_x = np.asarray(test_x)
     tesy_y = np.asarray(test_y)
@@ -80,4 +81,6 @@ def main():
     mse = metrics.mean_squared_error(test_y, pred_y)
     print("Mean Squared Error {}".format(mse))
 
-main()
+
+if __name__ == "__main()__":
+    main()
