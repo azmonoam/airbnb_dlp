@@ -28,7 +28,7 @@ parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--threshold', type=float, default=0.85)
 parser.add_argument('--remove_model_jit', type=int, default=None)
 parser.add_argument('--results_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/results')
-parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/class63/airbnb_reg/train_ids.txt')
+parser.add_argument('--train_ids_path', type=str, default='/home/labs/testing/class63/airbnb_dlp/airbnb_reg/train_ids.txt')
 
 
 
