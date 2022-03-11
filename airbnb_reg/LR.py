@@ -74,7 +74,7 @@ def main():
             test_y.extend([target.squeeze().tolist()])
 
     test_x = np.asarray(test_x)
-    tesy_y = np.asarray(test_y)
+    test_y = np.asarray(test_y)
     print("computing prediction on test set embeddings...")
     pred_y = lr.predict(test_x)
 
@@ -82,5 +82,5 @@ def main():
     print("Mean Squared Error {}".format(mse))
 
 
-if __name__ == "__main()__":
+if __name__ == '__main__':
     main()
