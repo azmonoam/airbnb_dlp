@@ -13,9 +13,21 @@ parser.add_argument('--results_path', type=str, default='/airbnb_reg/results')
 parser.add_argument('--path_output', type=str, default='/airbnb_reg/outputs/')
 parser.add_argument('--job_id', type=str, default='09-03-22_16-43-22_lr_0.0001_tb_1')
 parser.add_argument('--id_city_path', type=str, default='/airbnb_reg/id_and_city.csv')
+parser.add_argument('--figures', type=str, default='/airbnb_reg/figures/')
 
-def count_image_num_anf_plot(args, color):
+
+def filter_only_test(args, tablbe_to_filter):
+    predictions_path = args.base_path+ args.results_path + f"/losses/predictions_{args.job_id.split('_lr')[0]}.csv"
+    predictions = pd.read_csv(predictions_path)
+    predictions = predictions.loc[predictions['type'] == 'test']
+    filtered_table = predictions.join(tablbe_to_filter.set_index('id'), on='id')
+    return filtered_table
+
+
+def count_image_num_anf_plot(args, color, test_only = True):
     att_df = pd.read_csv(args.base_path + f"/airbnb_reg/outputs/att_data_{args.job_id.split('_lr')[0]}.csv")
+    if test_only:
+        att_df = filter_only_test(args, att_df)
     count_important_pic = att_df.groupby(['most_important_pic'], as_index=False).count()[['most_important_pic', 'id']]
     bigger_then_four = count_important_pic.loc[count_important_pic['most_important_pic'] > 4].sum()
     smaller_then_four = count_important_pic.loc[count_important_pic['most_important_pic'] <= 4]
@@ -30,7 +42,7 @@ def count_image_num_anf_plot(args, color):
             shadow=False, startangle=90, colors=color, wedgeprops={'linewidth': 1, 'edgecolor': 'white'})
     ax1.axis('equal')
     ax1.set_title('Most important photo')
-    plt.savefig(args.base_path + f"/airbnb_reg/outputs/att_data_{args.job_id.split('_lr')[0]}_most_imp_room_room_number.jpg", dpi=300)
+    plt.savefig(args.base_path + args.figures + f"att_data_{args.job_id.split('_lr')[0]}_most_imp_room_room_number.jpg", dpi=300)
     plt.show()
 
 
@@ -74,11 +86,11 @@ def add_baselines_and_convert_to_usd(city_conv_data, avg_loss_per_city):
     return avg_loss_per_city
 
 
-def autolabel(ax, rects):
+def autolabel(ax, rects, USD=''):
     for rect in rects:
         height = rect.get_height()
         height = round(height,1)
-        ax.annotate('{}'.format(height),
+        ax.annotate('{}{}'.format(height, USD),
                         xy=(rect.get_x() + rect.get_width() / 2, height),
                         xytext=(0, 3),  fontsize= 8,
                         textcoords="offset points",
@@ -94,22 +106,24 @@ def plot_loss_per_city_and_base_line(args,avg_loss_per_city, color):
         labels.append(citys[city])
     x = np.arange(avg_loss_per_city.shape[0])
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width / 2, avg_loss_per_city['loss_in_usd'], width, label='loss', color = color[0])
-    rects2 = ax.bar(x + width / 2, avg_loss_per_city['median_baseline_in_usd'], width, label='baseline', color = color[5])
+    rects1 = ax.bar(x - width / 2, avg_loss_per_city['loss_in_usd'], width, label='model prediction loss', color = color[0])
+    rects2 = ax.bar(x + width / 2, avg_loss_per_city['median_baseline_in_usd'], width, label='median GR loss', color = color[5])
     ax.set_ylabel('USD $')
-    ax.set_title('Loss in USD per city')
+    ax.set_title('EMS Loss in USD per city')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.legend()
-    autolabel(ax, rects1)
-    autolabel(ax, rects2)
+    autolabel(ax, rects1,'$')
+    autolabel(ax, rects2, '$')
     fig.tight_layout()
-    plt.savefig(args.base_path + args.results_path + f"/losses/predictions_{args.job_id.split('_lr')[0]}_loss_per_city.jpg", dpi=300)
+    plt.savefig(args.base_path + args.figures + f"predictions_{args.job_id.split('_lr')[0]}_loss_per_city.jpg", dpi=300)
     plt.show()
 
 
-def add_room_type_to_att_data(args):
+def add_room_type_to_att_data(args, test_only = True):
     att_df = pd.read_csv(args.base_path + f"/airbnb_reg/outputs/att_data_{args.job_id.split('_lr')[0]}.csv")
+    if test_only:
+        att_df = filter_only_test(args, att_df)
     room_type_df = pd.read_csv(args.base_path + '/room_type.csv', usecols=['Image_path', 'room_type'])
     att_df_with_most_important_room = att_df.join(room_type_df.set_index('Image_path').rename(columns={"room_type": "I_importat_room_type"}), on='most_important_pic_path')
     att_df_with_most_important_room['room_0_path'] = att_df_with_most_important_room.apply(
@@ -138,7 +152,7 @@ def plot_room_type_for_important_photo_vs_baseline(att_df_rooms, color):
     autolabel(ax, rects1)
     autolabel(ax, rects2)
     fig.tight_layout()
-    plt.savefig(args.base_path + f"/airbnb_reg/outputs/att_data_{args.job_id.split('_lr')[0]}_most_imp_room_dist.jpg", dpi=300)
+    plt.savefig(args.base_path + args.figures + f"att_data_{args.job_id.split('_lr')[0]}_most_imp_room_dist.jpg", dpi=300)
     plt.show()
 
 
@@ -159,7 +173,7 @@ def plot_loss_usd():
     median_per_epoch.plot('epoch', ['test', 'train', 'median_baseline', 'mean_baseline'], ylabel='loss in USD')
     plt.figure()
     plt.title('loss in USD as function of epochs')
-    plt.savefig(args.base_path+ args.results_path + f"/losses/loss_in_usd_over_ep_{args.job_id}.jpg", dpi=300)
+    plt.savefig(args.base_path + args.figures + f"loss_in_usd_over_ep_{args.job_id}.jpg", dpi=300)
     plt.show()
 
 
@@ -170,11 +184,11 @@ def plot_loss():
     train_losses = pd.read_csv(args.base_path+ args.results_path + f"/losses/train_losses_{args.job_id}.csv")
     train_medians = train_losses.groupby(['epoch'], as_index=False).median()['loss']
 
-    median_per_epoch = pd.DataFrame({'test': test_medians.values, 'train': train_medians.values, 'baseline':1.1364, 'mean_baseline':1.0506})
+    median_per_epoch = pd.DataFrame({'test': test_medians.values, 'train': train_medians.values})
     median_per_epoch['epoch'] = [i for i in range(1, len(test_medians) + 1)]
-    median_per_epoch.plot('epoch', ['test', 'train', 'baseline'], ylabel='loss', color=[color[0],color[4],color[5]])
-    plt.title('loss as function of epochs')
-    plt.savefig(args.base_path+ args.results_path + f"/losses/loss_over_ep_{args.job_id}.jpg", dpi=300)
+    median_per_epoch.plot('epoch', ['test', 'train'], ylabel='loss', color=[color[0],color[4],color[5]])
+    plt.title('MSE loss as function of epochs')
+    plt.savefig(args.base_path + args.figures + f"loss_over_ep_{args.job_id}.jpg", dpi=300)
     plt.show()
 
 
@@ -207,15 +221,17 @@ def plot_radical_apt_most_imp_photo(args, paths, num_photos, kind):
             axarr[i, j].imshow(img)
             axarr[i, j].axis('off')
             k += 1
-            plt.show()
     plt.suptitle(f'Most important images of apartments with the {kind}')
     plt.tight_layout()
     plt.subplots_adjust(wspace=0.05, hspace=0.01)
-    plt.savefig(args.base_path+ args.results_path + f"/{kind}_{args.job_id}.jpg", dpi=300)
+    plt.savefig(args.base_path + args.figures + f"/{kind}_{args.job_id}.jpg", dpi=300)
+    plt.show()
 
 
-def get_highest_att(args, num_apt):
+def get_highest_att(args, num_apt, test_only = True):
     att_data = pd.read_csv(args.base_path + f"/airbnb_reg/outputs/att_data_{args.job_id.split('_lr')[0]}.csv")
+    if test_only:
+        att_data = filter_only_test(args, att_data)
     attֹ_fl_list = []
     most_imp_att_list = []
     for i in range(att_data.shape[0]):
@@ -243,7 +259,7 @@ def seperate_most_imp_and_rest_photos_paths(sorted_att_data):
     return to_plot
 
 
-def plot_att_diffs_photos(paths, num_apt):
+def plot_att_diffs_photos(paths, num_apt, kind):
     f, axarr = plt.subplots(num_apt, 5)
     k = 0
     for i in range(num_apt):
@@ -257,12 +273,43 @@ def plot_att_diffs_photos(paths, num_apt):
             axarr[i, j].imshow(img)
             axarr[i, j].axis('off')
         k += 1
-    plt.show()
-    #    plt.suptitle(f'Most important images of apartments with the {kind}')
+    plt.suptitle(f'Att distribution of apartments with the {kind}')
     plt.tight_layout()
     plt.subplots_adjust(wspace=0.05, hspace=0.01)
-#    plt.suptitle(f'Most important images of apartments with the {kind}')
+    plt.savefig(args.base_path + args.figures + f"{kind}_{args.job_id}.jpg", dpi=300)
+    plt.show()
 
+
+def get_best_worse_preds(args, num_apt):
+    pred_full_path = args.base_path + args.results_path + f"/losses/predictions_{args.job_id.split('_lr')[0]}.csv"
+    city_id_full_path = args.base_path + args.id_city_path
+    pred_with_city_df = get_apt_city.add_city_per_id(city_id_full_path, pred_full_path)
+    pred_with_city_df = pred_with_city_df.loc[pred_with_city_df['type'] == 'test']
+    pred_with_city_df['diff'] = abs(pred_with_city_df['price'] - pred_with_city_df['pred'])
+    sorted_test_pred = pred_with_city_df.sort_values(by='diff')
+    best = sorted_test_pred.iloc[:num_apt]
+    worst = sorted_test_pred.iloc[-num_apt:].sort_values(by='diff', ascending=False)
+    return best, worst
+
+
+def plot_i0_vs_most_impd(paths, num_apt, kind):
+    f, axarr = plt.subplots(num_apt, 2)
+    for i in range(num_apt):
+        path = args.base_path +'/monk_v1/airbnb/' + paths[i]
+        img = mpimg.imread(path)
+        axarr[i, 0].imshow(img)
+        axarr[i, 0].axis('off')
+        path = path[:path.find('I')+1] + '0.jpeg'
+        img = mpimg.imread(path)
+        axarr[i, 1].imshow(img)
+        axarr[i, 1].axis('off')
+    axarr[0, 0].set_title('chosen by model', fontsize=10)
+    axarr[0, 1].set_title('chosen by user', fontsize=10)
+    plt.suptitle(f'Most important image - {kind}')
+    plt.tight_layout()
+    plt.subplots_adjust(wspace=0.001, hspace=0.01)
+    plt.savefig(args.base_path + args.figures + f"{kind}_{args.job_id}.jpg", dpi=300)
+    plt.show()
 
 
 def main(args):
@@ -275,18 +322,13 @@ def main(args):
 
 
 if __name__ == '__main__':
-    color = ['#4F6272', '#B7C3F3', '#DD7596', '#8EB897', '#f6bd60', '#e76f51', '#2a9d8f']
     args = parser.parse_args()
+    color = ['#4F6272', '#B7C3F3', '#DD7596', '#8EB897', '#f6bd60', '#e76f51', '#2a9d8f']
     city_conv_data = {'nyc': {'0.25': 126.431266846361, '0.75': 248.517520215633, 'mean_baseline_loss': 1.5701, 'median_baseline_loss':1.4448 },
                       'ist': {'0.25': 33.9339622641509, '0.75': 100.161725067385,  'mean_baseline_loss': 0.5891, 'median_baseline_loss': 0.5499 },
                       'ber': {'0.25': 79.9245283018868, '0.75': 156.0,  'mean_baseline_loss':0.9418, 'median_baseline_loss':0.8731 },
                       'tor': {'0.25': 55.3793800539084, '0.75': 143.995956873315,  'mean_baseline_loss': 0.9461, 'median_baseline_loss':0.8662},
                       'gre': {'0.25': 44.2681940700809, '0.75': 89.0,  'mean_baseline_loss': 1.4517, 'median_baseline_loss':1.3287}}
-    bottom, top = get_highest_att(args, 3)
-    top_paths = seperate_most_imp_and_rest_photos_paths(top)
-    bottom_paths = seperate_most_imp_and_rest_photos_paths(bottom)
-    plot_att_diffs_photos(top_paths, 3)
-    plot_att_diffs_photos(bottom_paths, 3)
     print('plot loss')
     plot_loss()
     print('calc and plot loss per city')
@@ -304,3 +346,15 @@ if __name__ == '__main__':
     bottom_path = get_radical_apt_most_imp_photo(args, bottom)
     plot_radical_apt_most_imp_photo(args, top_path, 16, 'highest predicted price')
     plot_radical_apt_most_imp_photo(args, bottom_path, 16, 'lowest predicted price')
+    print('plot att differences')
+    bottom, top = get_highest_att(args, 5)
+    top_paths = seperate_most_imp_and_rest_photos_paths(top)
+    bottom_paths = seperate_most_imp_and_rest_photos_paths(bottom)
+    plot_att_diffs_photos(top_paths, 5, 'lowest att diff')
+    plot_att_diffs_photos(bottom_paths, 5,'highest att diff' )
+    print('best worst pred')
+    best, worst = get_best_worse_preds(args, 5)
+    best_imp_images_path = get_radical_apt_most_imp_photo(args, best)
+    worst_imp_images_path = get_radical_apt_most_imp_photo(args, worst)
+    plot_i0_vs_most_impd(best_imp_images_path, 5, 'model best predictions')
+    plot_i0_vs_most_impd(worst_imp_images_path, 5,'model worst predictions' )
