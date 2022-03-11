@@ -7,7 +7,7 @@ def add_city_per_id(city_data_path, csv_to_add_city_to):
     all_photos_data = all_photos_data.join(city_data.set_index('id'), on='id')
     new_name = csv_to_add_city_to[:csv_to_add_city_to.find('.csv')] + '_with_cities.csv'
     all_photos_data.to_csv(new_name, index=False)
-    return all_photos_data
+    return all_photos_data.reset_index()
 
 if __name__ == '__main__':
     BASE_PATH = '/Users/leeatgen/airbnb_dlp/'
