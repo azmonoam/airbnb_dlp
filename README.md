@@ -3,7 +3,7 @@
 DL4CV Final Project: Airbnb listing price prediction using ViT
 Noam Azmon, Michal Geyer, Tal Sokolov
 
-##Abstract
+## Abstract
 Airbnb is an online marketplace that connects people who want to rent out their homes with people who are looking for accommodations in specific locales. Founded in 2007, it gained huge popularity across populations and housing genres. Thereby, the tips and tricks for having a successful listing are of great interest to many. In this research project, we focused on the connection between a listing’s photo album and its price per night. The nature of this problem is that of a regression task. Specifically, we asked whether a listing’s price can be predicted by its photos, and which photo contributes the most to the prediction. An important characteristic of the problem is that the prediction for a single listing is done based on an album of multiple photos. Taking advantage of the sequential structure of ViT, we were able to aggregate each album’s photos and extract the album’s most important photo for the price prediction through its attention layer. When compared with different naive price estimations, our model yielded better precision. Next, we compared the important photo extracted from the attention layer to the photo chosen as the most important by the listing’s host. Furthermore, we analyzed the listings with the highest and lowest predictions, spotting meaningful features. We then passed the photos through a pre-trained room recognition CNN, and compared the room-type distributions of the most important photos extracted from our network and the ones chosen by the hosts.
 
 Motivation/Problem Statement
