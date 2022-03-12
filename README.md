@@ -18,9 +18,8 @@ Referring to a group of photos as a sequence with an assessment of the most impo
 ## Method
 The input to our model is the first 5 photos that appear on the front page of an Airbnb listing (Fig 1.). The order of the 5 photos representing an apartment is shuffled to rule out order biases. These 5 photos are chosen as they dominate the first impression of the user. 
 
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/Final%20Architecture.png)
 Fig 1. An example for Airbnb’s listing main page photo album. The first photo is larger at scale.
-
-
 
 Inspired by the PETA architecture [4], we apply PyTorch’s pre-trained ResNet152 [5] backbone, trained on ImageNet [6] , as a feature encoder. We get the embeddings xk=backbone(Ik) | k {1,5} .
 For each image embeddings xk a learnable positional encoding is added: zk = xk + ekpos | k{1,5}.  
