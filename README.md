@@ -6,16 +6,16 @@ Noam Azmon, Michal Geyer, Tal Sokolov
 ## Abstract
 Airbnb is an online marketplace that connects people who want to rent out their homes with people who are looking for accommodations in specific locales. Founded in 2007, it gained huge popularity across populations and housing genres. Thereby, the tips and tricks for having a successful listing are of great interest to many. In this research project, we focused on the connection between a listing’s photo album and its price per night. The nature of this problem is that of a regression task. Specifically, we asked whether a listing’s price can be predicted by its photos, and which photo contributes the most to the prediction. An important characteristic of the problem is that the prediction for a single listing is done based on an album of multiple photos. Taking advantage of the sequential structure of ViT, we were able to aggregate each album’s photos and extract the album’s most important photo for the price prediction through its attention layer. When compared with different naive price estimations, our model yielded better precision. Next, we compared the important photo extracted from the attention layer to the photo chosen as the most important by the listing’s host. Furthermore, we analyzed the listings with the highest and lowest predictions, spotting meaningful features. We then passed the photos through a pre-trained room recognition CNN, and compared the room-type distributions of the most important photos extracted from our network and the ones chosen by the hosts.
 
-Motivation/Problem Statement
+## Motivation/Problem Statement
 On an Airbnb listing page one may find all sorts of information about the offered accommodation; a free-text description of it, a list of its amenities, its locational benefits, host policies, and importantly: photos of the property. The fact that photos have a great effect on listings’ appeal was recognized by Airbnb early on. Airbnb offers its hosts a professional photography service, In which they connect a host to a local photographer that takes professional photos of the host’s offered accommodation. On their website, Airbnb states that good photos of the property bring up to 20% increase in earnings. A precise price estimation tool, accommodated with an image arrangement recommendation system can be of value.
 In our project, we aim to test the relation between the photos of a listing to its price per night. Our main question is - Can a listing’s price be predicted by its photos? Furthermore - what is the most important photo for this kind of prediction? The nature of this question is that of a regression problem; predicting some continuous value for each album. Since in contrast to classification problems, this is not a common use of CNN’s, let alone ViT’s, we find this to be an intriguing field of investigation.
 
-Related work
+## Related work
 Airbnb as a rich data set with business-related interests has been studied, and different tools were applied in order to categorize its visual data: Object detection in Airbnb room photos [1], Categorising listing photos into different room types [2]. 
 Property revaluation is a problem with clear applications which was considered as Vision-based real estate price estimation  [3]. 
 Referring to a group of photos as a sequence with an assessment of the most important photo was presented in Photo Albums Event Recognition using Transformers Attention [4]. We use the latter’s architecture as the basis to ours, with the significant change of treating the problem as regression rather than classification. 
 
-Method
+## Method
 The input to our model is the first 5 photos that appear on the front page of an Airbnb listing (Fig 1.). The order of the 5 photos representing an apartment is shuffled to rule out order biases. These 5 photos are chosen as they dominate the first impression of the user. 
 
 Fig 1. An example for Airbnb’s listing main page photo album. The first photo is larger at scale.
@@ -31,13 +31,13 @@ Fig 1. The architecture
 
 In order to obtain meaningful analysis, the photos are also passed through a pre-trained network to label the photos by room type. Using the Monk [7]  library that offers a house room classifier [8] based on ResNet18 [9], we labeled each photo with one of 8 classes (bathroom, bedroom, dining room, exterior, interior, kitchen, living room and other). This classifier claims to provide about 85% accuracy on its original validation data, which was acquired via real estate databases [10].
 
-Data Acquisition and annotation 
+## Data Acquisition and annotation 
 The data of 30,600 Airbnb apartments listings was collected using Kaggle [11] datasets. 
 The apartments are located in New York City, Berlin, Istanbul, Athens, and Toronto, aiming to achieve data representing worldwide and cross-continent distributions. Filters were applied to avoid unwelcome effects, as follows. The model relies on 5 input photos so listings with less than that are removed. We focus on rent terms of short vacations, especially in the context of pandemic times where some of the landlords redefine the purpose of their properties to long-term rentals not intended for tourism. Listings with no availability throughout the entire year were also removed, suspected as not active and not updated. We remove the effect of misleading prices by setting a minimum value for a listing price. Less than a dozen listings in each city appeared extremely luxurious and overpriced in the matter of highly outre distribution, and were removed as outliers. The applied filters left us with about 12,216 (2,736 in New York, 3,575 in Athens, 3,318 in Istanbul, 1,238 in Toronto, and 1,349 in Berlin) listings, which are 61,080 property photos.  A price of a property was evaluated as the mean single night price over the next year. In order to avoid geographical biases, the prices were normalized within each country using the IQR robust measurement [12] of scale (x-Q0.75-Q0.25 , Qi is the i quantile and  is the median). The resulting price distributions within each county vary, but exhibit similar ranges (Fig. 2). The prices to be predicted are the scaled prices. The Data set was split randomly into 80% train 20% test, with these proportions kept for each country to get a proper representation of the variance
 
 Fig 2. Histograms of the apartment on the scaled prices over the 5 cities. The distributions are distinguishable.
 
-Experiments and analysis
+## Experiments and analysis
 
     
 Fig 3. loss curve over epochs for the test and train.	
@@ -58,12 +58,12 @@ Fig. 7.  Left (right) is the photos of the listings with the lowest (highest) re
 
 We analyzed the difference between the attention relative weight of different photos in the album, quantifying the importance of the most important photo (i.e. the photo with the highest attention weight in the album). We focused on listings where the importance (i.e. the attention relative weight) of the most important photo was the lowest (Fig 7. left) and listings where it was the highest (Fig 7 right). Note that for listings in which the most important photo was given a low relative weight, the most important photo is consistently similar to the other photos. On the other hand, for listings in which the most important photo was given a high relative weight, the most important photo is significantly different than the others. This may indicate that the attention weight distribution holds the variance between the photos in the album.
 
-Conclusion
+## Conclusion
 The use of ViT in our project allowed us not only to create a model that takes into account the sequential structure of our data (albums) and outperforms naive models, but also to inspect and analyze different aspects of the price prediction task.
 This was also enabled by the accessibility of powerful tools such as PyTorch’s ResNet and Monk pre-trained networks. Analysis of the room type distribution of the most important photo, showed that even when our model did not choose the exact same photo as the host to be the most important, in most cases it chose the same room type (Fig 5). Analysis of the photos marked as most important by the attention layer in our model, exhibited that the model learned to associate visual features with high and low prices (Fig 6). Finally, quantification of how-much-more-important was the most important photo, showed that the attention distribution holds information on the variance between photos within an album (Fig 7). 
 It is important to mention that, to begin with, the problem of price prediction can not necessarily be solved properly using visual information solely. For example, the information on the location attractivity (e.g., city center, neighborhood safety, etc.) might be crucial for an accurate prediction. In addition, the aspiration to model a worldwide phenomenon might have been a far-fetched easing of conditions. The normalized price distribution shows for example that Istanbul’s distribution differs from the others (Fig. 2), which might have affected our results as can be detected in the loss analysis (Fig. 4). These kinds of modifications are interesting follow-up research directions.
 
-References
+## References
 
 [1] Shijing Yao, 2019, Amenity Detection and Beyond — New Frontiers of Computer Vision at Airbnb
 https://medium.com/airbnb-engineering/amenity-detection-and-beyond-new-frontiers-of-computer-vision-at-airbnb-144a4441b72e
