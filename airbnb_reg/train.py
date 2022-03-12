@@ -1,12 +1,11 @@
 import argparse
 import datetime
+import random
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import torch
 from torch.optim import lr_scheduler
-import random
 
 from src.models import create_model
 from src.utils.utils import create_dataloader

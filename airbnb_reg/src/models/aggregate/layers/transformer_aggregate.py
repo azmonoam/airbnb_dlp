@@ -1,8 +1,10 @@
 import os
-from torch import nn
-import torch
-from src.utils.utils import trunc_normal_
+
 import pandas as pd
+import torch
+from torch import nn
+
+from src.utils.utils import trunc_normal_
 
 
 class TransformerEncoderLayerWithWeight(nn.TransformerEncoderLayer):
