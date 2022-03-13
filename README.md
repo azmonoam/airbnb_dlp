@@ -45,6 +45,7 @@ Fig 3. loss curve over epochs for the test and train.
 Fig 4. Loss distribution across cities compared with the naive median and mean prediction loss for each city.
 
 Looking at the loss curve over epochs of the train and the test set (Fig. 3), we can see a learning curve for the train, as expected of a learning model, with quite a noisy test curve that stabilizes slightly above the training loss. In order to evaluate our prediction we compared it with the loss of naive models. Models assuming the median or the mean price of all listings achieved a higher loss value of 1.36 and 1.05 accordingly. SciKit’s [13] linear regression model receiving the same embeddings used in our model, concatenated, achieved an order of magnitude worse results.  Reverting the scaling of the prices we get the loss in USD for each city (Fig. 4). We see that persistently the loss is better than the loss of naive median and mean prediction of each city.
+
 (a)
 ![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/att_data_most_imp_room_dist.jpg)
 (b)
