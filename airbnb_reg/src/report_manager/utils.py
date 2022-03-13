@@ -1,8 +1,10 @@
-import torch
-import numpy as np
 from itertools import chain
-from fastai.torch_core import to_detach, flatten_check, store_attr
+
+import numpy as np
+import torch
 from fastai.metrics import Metric
+from fastai.torch_core import to_detach, flatten_check, store_attr
+
 
 class AccumMetricG(Metric):
     "Stores predictions and targets on CPU in accumulate to perform final calculations with `func`."
@@ -28,40 +30,6 @@ class AccumMetricG(Metric):
         self.preds.append(pred)
         self.targs.append(targ)
 
-    # def accumulate_by_album(self, x, y, filenames):
-    #     albums = [filename.rpartition('/')[0] for filename in filenames]
-    #     cur_albums = list(set(albums))
-    #     pred = x
-    #     if self.album_voting == 'attention':
-    #         pred = torch.zeros(len(y), device=x.device, dtype=x.dtype)
-    #         imgs4album = x.shape[1]-1
-    #     targ = y
-    #     for album in cur_albums:
-    #         ind_album = [i for i, x in enumerate(albums) if x == album]
-    #         if self.album_voting == 'per_image_th':
-    #             # pred_album = np.mean(x[albums==album]>per_img_th)
-    #             pred_album = np.mean(x[ind_album,:] > self.thresh, axis=0)
-    #             pred[ind_album] = pred_album
-    #         elif self.album_voting == 'total_conf_th':
-    #             pred_album = np.mean(x[ind_album,:], axis=0)
-    #             pred[ind_album] = pred_album
-    #         elif self.album_voting == 'attention' :
-    #             ialbum = (ind_album[0])// imgs4album
-    #             pred_album = x[ialbum,0,1:] #    .cpu().numpy()
-    #             pred[ind_album] = pred_album
-    #             # self.targs.append(targ)
-    #             # self.filenames.append(album)
-    #
-    #     # pred = x.argmax(dim=self.dim_argmax) if self.dim_argmax else x
-    #     # if self.sigmoid:
-    #     #     pred = torch.sigmoid(pred)
-    #     # if self.thresh:
-    #     #     pred = (pred >= self.thresh)
-    #     pred,targ = to_detach(pred),to_detach(targ)
-    #     if self.flatten: pred,targ = flatten_check(pred,targ)
-    #     self.preds.append(pred)
-    #     self.targs.append(targ)
-
 
     def value(self, func, **kwargs):
         if len(self.preds) == 0: return
@@ -72,22 +40,6 @@ class AccumMetricG(Metric):
             kwargs['filenames'] = list(chain.from_iterable(kwargs['filenames']))
         if self.to_np: preds,targs = preds.numpy(),targs.numpy()
         return func(targs, preds, **kwargs) if self.invert_args else self.func(preds, targs, **kwargs)
-
-#
-# def accuracy(output, target, topk=(1,)):
-#     """ Computes the precision@k for the specified values of k """
-#     maxk = max(topk)
-#     batch_size = target.size(0)
-#
-#     _, pred = output.topk(maxk, 1, True, True)
-#     pred = pred.t()
-#     correct = pred.eq(target.view(1, -1).expand_as(pred))
-#
-#     res = []
-#     for k in topk:
-#         correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-#         res.append(correct_k.mul_(100.0 / batch_size))
-#     return res
 
 def accuracy(inp, targ, axis=-1):
     "Compute accuracy with `targ` when `pred` is bs * n_classes"

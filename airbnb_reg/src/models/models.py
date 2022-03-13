@@ -19,9 +19,7 @@ class fTResNet(TResNet):
     resnet152_model = torchvision.models.resnet152(pretrained=True)
     model = nn.Sequential(*(list(resnet152_model.children())[:-1]))
     self.body = model
-    # self.global_pool = 'avg'
-    #   if 'global_pool' in kwargs:
-    #       self.global_pool = kwargs[]
+
 
   def forward(self, x, filenames=None, epoch_num=None):
     with torch.no_grad():
@@ -29,24 +27,12 @@ class fTResNet(TResNet):
     self.embeddings = self.global_pool(x)
 
     if self.aggregate:
-        # self.embeddings = self.aggregate(self.embeddings, filenames)
-        # self.embeddings, attn_mat = self.aggregate(self.embeddings, filenames)
         if isinstance(self.aggregate,TAggregate):
            self.embeddings, self.attention = self.aggregate(self.embeddings, filenames, epoch_num)
            logits = self.head(self.embeddings)
         else:# CNN aggregation:
             logits = self.head(self.embeddings)
-            # logits aggregation before softmax:
-            # logits = self.aggregate(logits)
             logits = self.aggregate(nn.functional.softmax(logits, dim=1))
-            ## Embeddings aggregation:
-            # self.embeddings = self.aggregate(self.embeddings, filenames)
-            # logits = self.head(self.embeddings)
-
-    # if attn_mat is None:
-    #     return logits
-    # else:
-    #     return (logits, attn_mat)
     return logits
 
 
@@ -99,45 +85,3 @@ def MTResnetAggregate(model_params):
 
 
     return model
-
-'''
-@register_model
-def resnet101aggregate(model_params, in_chans=3, **kwargs):
-    """Constructs a ResNet-101 model.
-    """
-    num_classes = model_params['num_classes']
-    args = model_params['args']
-
-    aggregate = None
-    if args.use_transformer:
-      aggregate = TAggregate(args.album_clip_length, args=args)
-    else:
-      aggregate = Aggregate(args.album_clip_length, args=args)
-
-    model = fResNet(aggregate=aggregate, block=ResnetBottleneck, layers=[3, 4, 23, 3],
-                    num_classes=num_classes,
-                    in_chans=in_chans,
-                    **kwargs)
-    return model
-
-
-@register_model
-def resnet50aggregate(model_params, in_chans=3, **kwargs):
-    """Constructs a ResNet-50 model.
-    """
-    num_classes = model_params['num_classes']
-    args = model_params['args']
-
-    aggregate = None
-    if args.use_transformer:
-      aggregate = TAggregate(args.album_clip_length, args=args)
-    else:
-      aggregate = Aggregate(args.album_clip_length, args=args)
-
-    model = fResNet(aggregate=aggregate, block=ResnetBottleneck, layers=[3, 4, 6, 3],
-                    num_classes=num_classes,
-                    in_chans=in_chans,
-                    **kwargs)
-
-    return model
-'''

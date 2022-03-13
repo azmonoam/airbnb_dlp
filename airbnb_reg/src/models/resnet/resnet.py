@@ -1,12 +1,13 @@
+import logging
+import math
 from collections import OrderedDict
 
-import torch.nn.functional as F
 import torch.nn as nn
-from ..utils.registry import register_model
+import torch.nn.functional as F
 from src.models.tresnet.layers.adaptive_avgmax_pool import SelectAdaptivePool2d
 from src.models.tresnet.layers.general_layers import SEModule
-import math
-import logging
+
+from ..utils.registry import register_model
 
 logger = logging.getLogger(__name__)
 

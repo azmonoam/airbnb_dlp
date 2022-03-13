@@ -1,11 +1,14 @@
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
-from torch.nn import Module as Module
-from collections import OrderedDict
+from inplace_abn import InPlaceABN
 from src.models.tresnet.layers.anti_aliasing import AntiAliasDownsampleLayer
+from torch.nn import Module as Module
+
 from .layers.avg_pool import FastAvgPool2d
 from .layers.general_layers import SEModule, SpaceToDepthModule
-from inplace_abn import InPlaceABN
+
 
 class bottleneck_head(nn.Module):
     def __init__(self, num_features, num_classes, bottleneck_features=200):

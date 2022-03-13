@@ -1,7 +1,9 @@
-import numpy as np
 import math
+
+import numpy as np
 import torch.distributed as dist
 from torch.utils.data import Sampler
+
 
 class ValOrderedSampler(Sampler):
     """Sampler that restricts data loading to a subset of the dataset.
