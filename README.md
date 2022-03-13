@@ -38,7 +38,7 @@ The apartments are located in New York City, Berlin, Istanbul, Athens, and Toron
 Fig 2. Histograms of the apartment on the scaled prices over the 5 cities. The distributions are distinguishable.
 
 ## Experiments and analysis
-
+<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg" width="100">
 ![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg)
 Fig 3. loss curve over epochs for the test and train.	
 ![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/predictions_loss_per_city.jpg)
