@@ -38,9 +38,10 @@ The apartments are located in New York City, Berlin, Istanbul, Athens, and Toron
 Fig 2. Histograms of the apartment on the scaled prices over the 5 cities. The distributions are distinguishable.
 
 ## Experiments and analysis
-<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg" width="400">
+<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg" width="500">
 Fig 3. loss curve over epochs for the test and train.	
-<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/predictions_loss_per_city.jpg" width="400">
+
+<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/predictions_loss_per_city.jpg" width="500">
 Fig 4. Loss distribution across cities compared with the naive median and mean prediction loss for each city.
 
 Looking at the loss curve over epochs of the train and the test set (Fig. 3), we can see a learning curve for the train, as expected of a learning model, with quite a noisy test curve that stabilizes slightly above the training loss. In order to evaluate our prediction we compared it with the loss of naive models. Models assuming the median or the mean price of all listings achieved a higher loss value of 1.36 and 1.05 accordingly. SciKit’s [13] linear regression model receiving the same embeddings used in our model, concatenated, achieved an order of magnitude worse results.  Reverting the scaling of the prices we get the loss in USD for each city (Fig. 4). We see that persistently the loss is better than the loss of naive median and mean prediction of each city.
@@ -55,6 +56,12 @@ Fig. 5 (a). The network’s most important photo room type distribution in compa
 
 On the front page of a listing, the first photo displayed is significantly larger by size in comparison to the other four photos. It seems reasonable to assume that the photo chosen as the first photo (Image 0) is considered by the host as the most important photo. We ask what is the distribution of room types of Image 0 of each listing, compared with the distribution of the room type of the photo the network indicated as most important (Fig. 5a). We can see that the distribution resembles, indicating that even if Image 0 itself was not the model’s choice as most important, the room it represented was so. The room type distribution (Fig. 5c), combining the fact that the photo order is shuffled within each listing, can eliminate assumptions of biases regarding such conclusions. A comparison of the most important photo chosen by our model and by the host, on the listings on which our model’s loss was the smallest (Fig. 5b), shows the choices as either identical or of the same room. Repeating the comparison for the listings on which our model’s loss was the highest didn’t show such correlation.
 We inspect the attention output for the extremal predicted prices of listings. Among the sixteen listings that were predicted with the highest scaled price, the most important photos display open spaces, wide angles, bright colors and natural light.
+
+Solarized dark             |  Solarized Ocean
+:-------------------------:|:-------------------------:
+<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/highest%20predicted%20price_listings.jpg" width="400">
+  |  <img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/lowest%20predicted%20price_listings.jpg" width="400">
+
 
 ![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/highest%20predicted%20price_listings.jpg)
 ![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/lowest%20predicted%20price_listings.jpg)
