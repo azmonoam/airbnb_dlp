@@ -38,10 +38,9 @@ The apartments are located in New York City, Berlin, Istanbul, Athens, and Toron
 Fig 2. Histograms of the apartment on the scaled prices over the 5 cities. The distributions are distinguishable.
 
 ## Experiments and analysis
-<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg" width="100">
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg)
+<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg" width="400">
 Fig 3. loss curve over epochs for the test and train.	
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/predictions_loss_per_city.jpg)
+<img src="https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/predictions_loss_per_city.jpg" width="400">
 Fig 4. Loss distribution across cities compared with the naive median and mean prediction loss for each city.
 
 Looking at the loss curve over epochs of the train and the test set (Fig. 3), we can see a learning curve for the train, as expected of a learning model, with quite a noisy test curve that stabilizes slightly above the training loss. In order to evaluate our prediction we compared it with the loss of naive models. Models assuming the median or the mean price of all listings achieved a higher loss value of 1.36 and 1.05 accordingly. SciKit’s [13] linear regression model receiving the same embeddings used in our model, concatenated, achieved an order of magnitude worse results.  Reverting the scaling of the prices we get the loss in USD for each city (Fig. 4). We see that persistently the loss is better than the loss of naive median and mean prediction of each city.
