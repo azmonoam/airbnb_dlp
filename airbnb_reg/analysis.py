@@ -128,7 +128,7 @@ def add_room_type_to_att_data(args, test_only = True):
     att_df = pd.read_csv(args.base_path + f"/airbnb_reg/outputs/att_data_{args.job_id.split('_lr')[0]}.csv")
     if test_only:
         att_df = filter_only_test(args, att_df)
-    room_type_df = pd.read_csv(args.base_path + '/room_type.csv', usecols=['Image_path', 'room_type'])
+    room_type_df = pd.read_csv(args.base_path + '/data_handling/room_type.csv', usecols=['Image_path', 'room_type'])
     att_df_with_most_important_room = att_df.join(room_type_df.set_index('Image_path').rename(columns={"room_type": "I_importat_room_type"}), on='most_important_pic_path')
     att_df_with_most_important_room['room_0_path'] = att_df_with_most_important_room.apply(
         lambda row: row['most_important_pic_path'][:row['most_important_pic_path'].find('I')] + 'I0.jpeg', axis=1)
