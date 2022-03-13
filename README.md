@@ -39,32 +39,32 @@ Fig 2. Histograms of the apartment on the scaled prices over the 5 cities. The d
 
 ## Experiments and analysis
 
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/loss_over_ep.jpg | width=100)
 Fig 3. loss curve over epochs for the test and train.	
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/predictions_loss_per_city.jpg)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/predictions_loss_per_city.jpg | width=100)
 Fig 4. Loss distribution across cities compared with the naive median and mean prediction loss for each city.
 
 Looking at the loss curve over epochs of the train and the test set (Fig. 3), we can see a learning curve for the train, as expected of a learning model, with quite a noisy test curve that stabilizes slightly above the training loss. In order to evaluate our prediction we compared it with the loss of naive models. Models assuming the median or the mean price of all listings achieved a higher loss value of 1.36 and 1.05 accordingly. SciKit’s [13] linear regression model receiving the same embeddings used in our model, concatenated, achieved an order of magnitude worse results.  Reverting the scaling of the prices we get the loss in USD for each city (Fig. 4). We see that persistently the loss is better than the loss of naive median and mean prediction of each city.
 
 (a)
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/att_data_most_imp_room_dist.jpg)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/att_data_most_imp_room_dist.jpg | width=100)
 (b)
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/model%20best%20predictions_I0_vs_most_imp.jpg)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/model%20best%20predictions_I0_vs_most_imp.jpg | width=100)
 (c)
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/att_data_most_imp_room_room_number.jpg)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/att_data_most_imp_room_room_number.jpg | width=100)
 Fig. 5 (a). The network’s most important photo room type distribution in comparison with the listings main photo chosen manually by the host. 5 (b) Most important photo chosen by our model and by the user, on the listings on which our model’s loss was the smallest (i.e., best predictions of our model).  5 (c) The distribution of the listings’ most important photo’s order within the album
 
 On the front page of a listing, the first photo displayed is significantly larger by size in comparison to the other four photos. It seems reasonable to assume that the photo chosen as the first photo (Image 0) is considered by the host as the most important photo. We ask what is the distribution of room types of Image 0 of each listing, compared with the distribution of the room type of the photo the network indicated as most important (Fig. 5a). We can see that the distribution resembles, indicating that even if Image 0 itself was not the model’s choice as most important, the room it represented was so. The room type distribution (Fig. 5c), combining the fact that the photo order is shuffled within each listing, can eliminate assumptions of biases regarding such conclusions. A comparison of the most important photo chosen by our model and by the host, on the listings on which our model’s loss was the smallest (Fig. 5b), shows the choices as either identical or of the same room. Repeating the comparison for the listings on which our model’s loss was the highest didn’t show such correlation.
 We inspect the attention output for the extremal predicted prices of listings. Among the sixteen listings that were predicted with the highest scaled price, the most important photos display open spaces, wide angles, bright colors and natural light.
 
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/highest%20predicted%20price_listings.jpg)
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/lowest%20predicted%20price_listings.jpg)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/highest%20predicted%20price_listings.jpg | width=100)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/lowest%20predicted%20price_listings.jpg | width=100)
 Fig. 6.  Left (right) is the most important photo of the sixteen listings with the lowest (highest) predicted price.
 
 If we allow ourselves for a moment to involve human interpretation, these photos induce a positive atmosphere. On the contrary, among the sixteen listings that were predicted with the lowest scaled price, the most important photos display small, almost claustrophobic, spaces, with dim colors. Repeating the same analysis for the ground truth highest and lowest-priced,  we could not detect any distinct visual characteristics between the two groups.
 
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/Listings%20with%20the%20lowest%20relative%20weight%20of%20the%20most%20important.jpg)
-![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/Listings%20with%20the%20highest%20relative%20weight%20of%20the%20most%20important.jpg)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/Listings%20with%20the%20lowest%20relative%20weight%20of%20the%20most%20important.jpg | width=100)
+![alt text](https://github.com/azmonoam/airbnb_dlp/blob/main/airbnb_reg/figures/Listings%20with%20the%20highest%20relative%20weight%20of%20the%20most%20important.jpg | width=100)
 Fig. 7.  Left (right) is the photos of the listings with the lowest (highest) relative weight of the most important photo. Each row is a single listing album, and the leftmost photo of each row is the most important (i.e. with highest attention weight).
 
 We analyzed the difference between the attention relative weight of different photos in the album, quantifying the importance of the most important photo (i.e. the photo with the highest attention weight in the album). We focused on listings where the importance (i.e. the attention relative weight) of the most important photo was the lowest (Fig 7. left) and listings where it was the highest (Fig 7 right). Note that for listings in which the most important photo was given a low relative weight, the most important photo is consistently similar to the other photos. On the other hand, for listings in which the most important photo was given a high relative weight, the most important photo is significantly different than the others. This may indicate that the attention weight distribution holds the variance between the photos in the album.
